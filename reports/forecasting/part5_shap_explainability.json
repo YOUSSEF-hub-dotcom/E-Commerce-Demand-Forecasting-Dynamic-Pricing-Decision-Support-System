@@ -1,0 +1,443 @@
+{
+  "phase": "part5_shap_explainability",
+  "generated_utc": "2026-09-24T20:38:17.493299+00:00",
+  "model": {
+    "model_uri": "models:/demand_forecasting_final/2",
+    "name": "demand_forecasting_final",
+    "version": 2,
+    "stage": "Production",
+    "run_id": "5d729a8594dc488bbd18ba0c4e216f5a",
+    "source": "models:/m-e93cadaf963a4aa1b44b3e501379da92",
+    "status": "READY"
+  },
+  "model_type": "lightgbm.sklearn.LGBMRegressor",
+  "feature_count": 93,
+  "feature_schema": [
+    "week_of_year",
+    "month",
+    "quarter",
+    "year",
+    "demand_lag_1",
+    "demand_lag_2",
+    "demand_lag_4",
+    "rolling_demand_mean_4w",
+    "rolling_demand_std_4w",
+    "price_prev",
+    "price_chg_1w",
+    "freight_prev",
+    "category_share_prev",
+    "cat_agro_industria_e_comercio",
+    "cat_alimentos",
+    "cat_alimentos_bebidas",
+    "cat_artes",
+    "cat_artes_e_artesanato",
+    "cat_artigos_de_festas",
+    "cat_artigos_de_natal",
+    "cat_audio",
+    "cat_automotivo",
+    "cat_bebes",
+    "cat_bebidas",
+    "cat_beleza_saude",
+    "cat_brinquedos",
+    "cat_cama_mesa_banho",
+    "cat_casa_conforto",
+    "cat_casa_conforto_2",
+    "cat_casa_construcao",
+    "cat_cds_dvds_musicais",
+    "cat_cine_foto",
+    "cat_climatizacao",
+    "cat_consoles_games",
+    "cat_construcao_ferramentas_construcao",
+    "cat_construcao_ferramentas_ferramentas",
+    "cat_construcao_ferramentas_iluminacao",
+    "cat_construcao_ferramentas_jardim",
+    "cat_construcao_ferramentas_seguranca",
+    "cat_cool_stuff",
+    "cat_dvds_blu_ray",
+    "cat_eletrodomesticos",
+    "cat_eletrodomesticos_2",
+    "cat_eletronicos",
+    "cat_eletroportateis",
+    "cat_esporte_lazer",
+    "cat_fashion_bolsas_e_acessorios",
+    "cat_fashion_calcados",
+    "cat_fashion_esporte",
+    "cat_fashion_roupa_feminina",
+    "cat_fashion_roupa_infanto_juvenil",
+    "cat_fashion_roupa_masculina",
+    "cat_fashion_underwear_e_moda_praia",
+    "cat_ferramentas_jardim",
+    "cat_flores",
+    "cat_fraldas_higiene",
+    "cat_industria_comercio_e_negocios",
+    "cat_informatica_acessorios",
+    "cat_instrumentos_musicais",
+    "cat_la_cuisine",
+    "cat_livros_importados",
+    "cat_livros_interesse_geral",
+    "cat_livros_tecnicos",
+    "cat_malas_acessorios",
+    "cat_market_place",
+    "cat_moveis_colchao_e_estofado",
+    "cat_moveis_cozinha_area_de_servico_jantar_e_jardim",
+    "cat_moveis_decoracao",
+    "cat_moveis_escritorio",
+    "cat_moveis_quarto",
+    "cat_moveis_sala",
+    "cat_musica",
+    "cat_papelaria",
+    "cat_pc_gamer",
+    "cat_pcs",
+    "cat_perfumaria",
+    "cat_pet_shop",
+    "cat_portateis_casa_forno_e_cafe",
+    "cat_relogios_presentes",
+    "cat_seguros_e_servicos",
+    "cat_sinalizacao_e_seguranca",
+    "cat_tablets_impressao_imagem",
+    "cat_telefonia",
+    "cat_telefonia_fixa",
+    "cat_unknown",
+    "cat_utilidades_domesticas",
+    "rolling_demand_mean_8w",
+    "rolling_demand_mean_12w",
+    "rolling_demand_mean_16w",
+    "rolling_demand_std_8w",
+    "regime_ratio_4_12",
+    "regime_ratio_8_16",
+    "positive_rate_8w"
+  ],
+  "dataset": {
+    "data_source": "frozen 93-column design rows from Train/Validation history",
+    "reference_week": "2018-05-14",
+    "window_rows": 32729,
+    "rows_explained": 1500,
+    "background_rows": 400,
+    "test_split_accessed": false
+  },
+  "shap": {
+    "explainer": "shap.explainers._tree.TreeExplainer",
+    "explainer_relationship": "TreeExplainer applied to the wrapped lightgbm.sklearn.LGBMRegressor; SHAP values are log1p-domain contributions.",
+    "expected_value_log1p": 0.09019468057218356,
+    "additivity_residual_before_correction": {
+      "max_abs": 0.026971373010246547,
+      "mean_abs": 0.0026310125449960134,
+      "note": "LightGBM bin-quantization drift between SHAP path sums and model.predict on rows near split boundaries; corrected by per-row base so that served_prediction == expm1(base_row + sum(phi)) exactly."
+    },
+    "base_values": {
+      "mode": "per-row additivity-corrected",
+      "definition": "base_row = model_log_prediction - sum(phi)"
+    },
+    "prediction_shap_corr": 0.9840307194994152,
+    "seed": 20260924,
+    "scale": "log1p"
+  },
+  "global_findings_top": [
+    {
+      "feature": "cat_unknown",
+      "group": "categorical",
+      "mean_abs_shap": 0.03041625401298061,
+      "mean_shap": 0.021103513612775602,
+      "direction_corr": -0.9908384790725993,
+      "direction_label": "higher value -> lower output"
+    },
+    {
+      "feature": "category_share_prev",
+      "group": "driver",
+      "mean_abs_shap": 0.007375649187716553,
+      "mean_shap": -0.001330110187477653,
+      "direction_corr": -0.2745178999167513,
+      "direction_label": "higher value -> lower output"
+    },
+    {
+      "feature": "rolling_demand_std_8w",
+      "group": "regime",
+      "mean_abs_shap": 0.003999552493095547,
+      "mean_shap": 0.0017509808075643952,
+      "direction_corr": 0.5869773961902743,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "cat_ferramentas_jardim",
+      "group": "categorical",
+      "mean_abs_shap": 0.0024797402954321248,
+      "mean_shap": -0.0016637787566016191,
+      "direction_corr": 0.998644803039721,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "price_prev",
+      "group": "price",
+      "mean_abs_shap": 0.0015705137177043009,
+      "mean_shap": -0.00011864078025105146,
+      "direction_corr": -0.0126497919658791,
+      "direction_label": "ambiguous"
+    },
+    {
+      "feature": "cat_cama_mesa_banho",
+      "group": "categorical",
+      "mean_abs_shap": 0.001481665605350133,
+      "mean_shap": 0.001481665605350133,
+      "direction_corr": 0.9955827967228839,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_8w",
+      "group": "regime",
+      "mean_abs_shap": 0.0014714217075257985,
+      "mean_shap": 0.0012855034390829717,
+      "direction_corr": 0.8289649260513138,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "demand_lag_1",
+      "group": "lag",
+      "mean_abs_shap": 0.0013854565371088838,
+      "mean_shap": 0.0007186891422755444,
+      "direction_corr": 0.9079452715772917,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "cat_esporte_lazer",
+      "group": "categorical",
+      "mean_abs_shap": 0.0011831856119593612,
+      "mean_shap": 0.0011831856119593612,
+      "direction_corr": 0.9993046381391295,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_4w",
+      "group": "rolling",
+      "mean_abs_shap": 0.0010162624723381911,
+      "mean_shap": 0.0009689910311152031,
+      "direction_corr": 0.9515074172683279,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_12w",
+      "group": "regime",
+      "mean_abs_shap": 0.0009642074608609641,
+      "mean_shap": 0.0005825636330247366,
+      "direction_corr": 0.8698394357369826,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "cat_informatica_acessorios",
+      "group": "categorical",
+      "mean_abs_shap": 0.0008872723650471744,
+      "mean_shap": 0.0008872723650471744,
+      "direction_corr": 0.9984316590913506,
+      "direction_label": "higher value -> higher output"
+    }
+  ],
+  "group_importance": {
+    "categorical": {
+      "total_mean_abs_shap": 0.0417109500447449,
+      "feature_count": 73
+    },
+    "regime": {
+      "total_mean_abs_shap": 0.007588080815278197,
+      "feature_count": 7
+    },
+    "driver": {
+      "total_mean_abs_shap": 0.007375649187716553,
+      "feature_count": 1
+    },
+    "price": {
+      "total_mean_abs_shap": 0.0015705137177043009,
+      "feature_count": 1
+    },
+    "lag": {
+      "total_mean_abs_shap": 0.0014418468672532374,
+      "feature_count": 3
+    },
+    "rolling": {
+      "total_mean_abs_shap": 0.001276431088189657,
+      "feature_count": 2
+    },
+    "freight": {
+      "total_mean_abs_shap": 0.0004953567709436443,
+      "feature_count": 1
+    },
+    "price_change": {
+      "total_mean_abs_shap": 2.2960218415901183e-05,
+      "feature_count": 1
+    },
+    "calendar": {
+      "total_mean_abs_shap": 0.0,
+      "feature_count": 4
+    }
+  },
+  "price_related": [
+    {
+      "feature": "price_prev",
+      "group": "price",
+      "mean_abs_shap": 0.0015705137177043009,
+      "mean_shap": -0.00011864078025105146,
+      "direction_corr": -0.0126497919658791,
+      "direction_label": "ambiguous"
+    },
+    {
+      "feature": "freight_prev",
+      "group": "freight",
+      "mean_abs_shap": 0.0004953567709436443,
+      "mean_shap": 0.00019099961709758318,
+      "direction_corr": -0.25788388754308983,
+      "direction_label": "higher value -> lower output"
+    },
+    {
+      "feature": "price_chg_1w",
+      "group": "price_change",
+      "mean_abs_shap": 2.2960218415901183e-05,
+      "mean_shap": 6.4134378908299105e-06,
+      "direction_corr": -0.7523444533455584,
+      "direction_label": "higher value -> lower output"
+    }
+  ],
+  "regime_temporal": [
+    {
+      "feature": "rolling_demand_std_8w",
+      "group": "regime",
+      "mean_abs_shap": 0.003999552493095547,
+      "mean_shap": 0.0017509808075643952,
+      "direction_corr": 0.5869773961902743,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_8w",
+      "group": "regime",
+      "mean_abs_shap": 0.0014714217075257985,
+      "mean_shap": 0.0012855034390829717,
+      "direction_corr": 0.8289649260513138,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "demand_lag_1",
+      "group": "lag",
+      "mean_abs_shap": 0.0013854565371088838,
+      "mean_shap": 0.0007186891422755444,
+      "direction_corr": 0.9079452715772917,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_4w",
+      "group": "rolling",
+      "mean_abs_shap": 0.0010162624723381911,
+      "mean_shap": 0.0009689910311152031,
+      "direction_corr": 0.9515074172683279,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_12w",
+      "group": "regime",
+      "mean_abs_shap": 0.0009642074608609641,
+      "mean_shap": 0.0005825636330247366,
+      "direction_corr": 0.8698394357369826,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "regime_ratio_4_12",
+      "group": "regime",
+      "mean_abs_shap": 0.00035016507432503136,
+      "mean_shap": 0.00011698484372726357,
+      "direction_corr": 0.6441385782411795,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_mean_16w",
+      "group": "regime",
+      "mean_abs_shap": 0.00033288424311085445,
+      "mean_shap": 0.0001346489499780028,
+      "direction_corr": 0.5578169887509463,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "positive_rate_8w",
+      "group": "regime",
+      "mean_abs_shap": 0.0002808571734155669,
+      "mean_shap": 1.0935936209063439e-05,
+      "direction_corr": 0.12696463502139782,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "rolling_demand_std_4w",
+      "group": "rolling",
+      "mean_abs_shap": 0.00026016861585146576,
+      "mean_shap": 0.00024942770390985665,
+      "direction_corr": 0.419402445459879,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "regime_ratio_8_16",
+      "group": "regime",
+      "mean_abs_shap": 0.000188992662944435,
+      "mean_shap": -0.00011085686817555428,
+      "direction_corr": -0.2692136746763649,
+      "direction_label": "higher value -> lower output"
+    },
+    {
+      "feature": "demand_lag_2",
+      "group": "lag",
+      "mean_abs_shap": 3.459023321776885e-05,
+      "mean_shap": 2.8388224022301198e-05,
+      "direction_corr": 0.7925719363179109,
+      "direction_label": "higher value -> higher output"
+    },
+    {
+      "feature": "demand_lag_4",
+      "group": "lag",
+      "mean_abs_shap": 2.180009692658472e-05,
+      "mean_shap": -1.3379915444724425e-05,
+      "direction_corr": -0.38296933427117236,
+      "direction_label": "higher value -> lower output"
+    }
+  ],
+  "local_examples": [
+    {
+      "name": "typical_demand",
+      "product_id": "50fd2b788dc166edd20512370dac54df",
+      "week": "2018-05-14/2018-05-20",
+      "frame_index": 10437,
+      "predicted_demand_units": 0.023932174892996445,
+      "bucket": "typical_demand",
+      "visualization": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_typical_demand.png"
+    },
+    {
+      "name": "high_demand",
+      "product_id": "891fda5230e6e284e5430ded76eebcd7",
+      "week": "2018-05-14/2018-05-20",
+      "frame_index": 17530,
+      "predicted_demand_units": 0.09103668480794382,
+      "bucket": "high_demand",
+      "visualization": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_high_demand.png"
+    },
+    {
+      "name": "low_demand",
+      "product_id": "a8e69cb7ca2c04d5ba7f73b2385f2a76",
+      "week": "2018-05-14/2018-05-20",
+      "frame_index": 21486,
+      "predicted_demand_units": 0.0020831806018904537,
+      "bucket": "low_demand",
+      "visualization": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_low_demand.png"
+    }
+  ],
+  "limitations": [
+    "SHAP explains model behavior, not causality.",
+    "Elasticity is the appropriate framework for price-response analysis.",
+    "SHAP importance does not imply business causality.",
+    "Results depend on the reference data distribution.",
+    "Correlated features can distribute SHAP attribution across multiple variables."
+  ],
+  "artifacts": {
+    "parquet": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\shap_global_values.parquet",
+    "importance_csv": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\shap_feature_importance.csv",
+    "beeswarm": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\shap_summary_beeswarm.png",
+    "importance_plot": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\shap_feature_importance.png",
+    "local": [
+      "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_typical_demand.png",
+      "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_high_demand.png",
+      "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\local\\example_low_demand.png"
+    ],
+    "metadata": "D:\\ALL Projects\\E-Commerce\\artifacts\\explainability\\metadata.json"
+  }
+}

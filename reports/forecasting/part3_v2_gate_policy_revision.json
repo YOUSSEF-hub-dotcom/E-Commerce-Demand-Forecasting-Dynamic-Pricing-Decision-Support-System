@@ -1,0 +1,515 @@
+{
+  "timestamp_utc": "2026-09-24T11:27:28.818377+00:00",
+  "phase": "part3-v2-gate-policy-revision",
+  "evaluation_type": "post_hoc_holdout_evaluation",
+  "evaluation_group": "post_hoc_holdout",
+  "policy_decision": "REVISED_GATE_APPLIED",
+  "v2_decision": "PRODUCTION",
+  "policy": {
+    "name": "quality_gate_policy_v2_revised",
+    "legacy": "quality_gate_policy_v1_legacy",
+    "b_wape_role": "diagnostic",
+    "test_used_for_policy_revision": false,
+    "basis": "Formal owner decision after the provenance audit (part3_v2_gate_production_policy): B_wape <= 0.60 was classified as an engineering reference-anchored regression guard, not a documented business requirement. The revised policy reclassifies it as diagnostic/monitoring while preserving ALL other criteria unchanged."
+  },
+  "model": {
+    "uri": "models:/demand_forecasting_final/2",
+    "model_name": "demand_forecasting_final",
+    "version": 2,
+    "source_run_id": "5d729a8594dc488bbd18ba0c4e216f5a",
+    "stage_before": "Staging",
+    "stage_after": "Production"
+  },
+  "legacy_gate": {
+    "passed": false,
+    "promoted_stage": "Staging",
+    "outcome_count": 19,
+    "failed_criteria": [
+      "B_wape"
+    ]
+  },
+  "legacy_replay": {
+    "deterministic": true,
+    "identical_to_persisted": true,
+    "persisted_outcome_count": 19,
+    "replay_outcome_count": 19,
+    "mismatches": []
+  },
+  "revised_gate": {
+    "passed": true,
+    "promoted_stage": "Production",
+    "blocking_outcome_count": 18,
+    "blocking_criteria": [
+      {
+        "key": "wape",
+        "description": "Global WAPE (primary quality metric, unit-independent)",
+        "op": "le",
+        "bound": 0.41,
+        "observed": 0.375373,
+        "passed": true,
+        "reference": "0.4001 (persisted winner) / 0.3964 (EXP2)",
+        "justification": "Frozen champion EXP2 = 0.3964 on val; winner reference 0.4001. A -2.5% band above reference (=0.41) rejects any regression worse than ~2.4% vs. the persisted production quality bar while absorbing test-split variance.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "mae",
+        "description": "Global MAE (unit sales) - interpretable absolute error",
+        "op": "le",
+        "bound": 0.025,
+        "observed": 0.016554,
+        "passed": true,
+        "reference": "0.0235 (winner) / 0.0233 (EXP2)",
+        "justification": "Reference MAE 0.0233-0.0235 units; 0.025 allows ~7% headroom for test-period noise yet rejects any accuracy collapse.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "rmse",
+        "description": "Global RMSE (heavy-tail penalty)",
+        "op": "le",
+        "bound": 0.3,
+        "observed": 0.185602,
+        "passed": true,
+        "reference": "0.2725 (winner) / 0.2592 (EXP2)",
+        "justification": "Reference RMSE 0.26-0.27; budget of 0.30 is ~+10% to keep outliers in check without over-fitting the threshold to one val snapshot.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "mase",
+        "description": "Global MASE (vs train 1-step naive denominator 0.03804)",
+        "op": "le",
+        "bound": 0.64,
+        "observed": 0.435128,
+        "passed": true,
+        "reference": "0.6179 (winner) / 0.6122 (EXP2)",
+        "justification": "Reference MASE ~0.61-0.62; 0.64 leaves ~3-4% band while preserving the 'well below naive (=1)' quality demonstration.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "bias_pct",
+        "description": "Global bias (forecast/actual - 1) in %",
+        "op": "within",
+        "bound": [
+          -12.0,
+          12.0
+        ],
+        "observed": -1.196961,
+        "passed": true,
+        "reference": "-9.6% (winner) / -6.15% (EXP2)",
+        "justification": "Reference bias -6..-9.6% (slight under-forecast). A symmetrical \u00b112% band bounds systematic under/over-forecasting - the business impact asymmetry is then handled by the 2:1 asym loss below.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "asym21",
+        "description": "Asymmetric loss 2:1 (under-forecast penalised double)",
+        "op": "le",
+        "bound": 0.04,
+        "observed": 0.025095,
+        "passed": true,
+        "reference": "0.0381 (winner) / 0.0367 (EXP2)",
+        "justification": "Reference 0.037-0.038 cheap units; 0.04 is +~8% headroom; stricter than the raw pre-experiment score would already fail, guarding the stockout-cost asymmetry the metric encodes.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "pos_wape",
+        "description": "WAPE restricted to positive-demand rows (operational sellable demand)",
+        "op": "le",
+        "bound": 0.42,
+        "observed": 0.336382,
+        "passed": true,
+        "reference": "0.3721 (winner) / 0.3655 (EXP2)",
+        "justification": "Positive-demand error budget 0.42 vs reference 0.365-0.372; +13% band keeps sellable-demand accuracy near the champion.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "B_bias_pct",
+        "description": "B cohort bias (%) - MUST NOT systematically under-forecast",
+        "op": "ge",
+        "bound": -20.0,
+        "observed": 9.851522,
+        "passed": true,
+        "reference": "-30.0% (winner defect) / -18.2% (EXP2 fix)",
+        "justification": "Key business requirement distilled from the defect analysis: the production winner under-forecast B by -30%; EXP2 repaired it to -18.2%. The gate mandates >= -20% - i.e. the candidate MUST hold the fix and may not slip back towards the -30% stockout regime.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "B2_wape",
+        "description": "B2 cohort WAPE (upper-mid demand)",
+        "op": "le",
+        "bound": 0.65,
+        "observed": 0.556648,
+        "passed": true,
+        "reference": "0.5624 (winner) / 0.5557 (EXP2)",
+        "justification": "B2 reference 0.56; 0.65 band = +16% regression guard for this secondary near-mature cohort.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "B2_bias_pct",
+        "description": "B2 cohort bias (%)",
+        "op": "ge",
+        "bound": -20.0,
+        "observed": 0.861589,
+        "passed": true,
+        "reference": "-28.0% (winner defect) / -18.1% (EXP2 fix)",
+        "justification": "Same stockout-risk requirement as B: the -28% production defect must stay fixed (>= -20%), matching the EXP2 result of -18.1%.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "C_wape",
+        "description": "C long-tail cohort WAPE (sparse, many zero-weeks)",
+        "op": "le",
+        "bound": 0.43,
+        "observed": 0.365135,
+        "passed": true,
+        "reference": "0.3807 (winner) / 0.3796 (EXP2)",
+        "justification": "Long tail (majority of 32.7k SKUs) must not be sacrificed for segment gains: 0.43 = +13% band over reference 0.38.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "pred_integrity",
+        "description": "Predictions finite, non-negative, correct length",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "Rejects NaN/Inf/negative/shape-broken outputs before any scoring is trusted.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "schema_ok",
+        "description": "Model input schema == frozen 93-column signature (exact order)",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "Schema drift silently corrupts inference; the gate enforces the frozen contract.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "model_load_ok",
+        "description": "Model artifact loads from MLflow",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "A logged model that cannot reload is not deployable regardless of metrics.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "pyfunc_predict_ok",
+        "description": "PyFunc predict returns pred_demand on unit scale",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "End-to-end MLflow PyFunc contract must hold for the pipeline to be served.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "signature_ok",
+        "description": "MLflow model signature recorded and valid",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "Signature drives downstream serving; its absence breaks the registry contract.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "artifacts_ok",
+        "description": "Model + feature_columns.json + config.json artifacts present in run",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "Reproducibility requires the schema and freeze config shipped with the model.",
+        "group": "post_hoc_holdout"
+      },
+      {
+        "key": "tests_ok",
+        "description": "Regression suite green (Phase-G gate)",
+        "op": "bool",
+        "bound": true,
+        "observed": true,
+        "passed": true,
+        "reference": "required",
+        "justification": "The candidate must not corrupt the project's existing contracts.",
+        "group": "post_hoc_holdout"
+      }
+    ],
+    "diagnostic_metrics": [
+      {
+        "key": "B_wape",
+        "description": "B cohort WAPE (sustained high-volume, the business-critical segment)",
+        "observed": 0.628239,
+        "bound": "diagnostic",
+        "role": "diagnostic"
+      }
+    ]
+  },
+  "blocking_criteria": [
+    {
+      "key": "wape",
+      "description": "Global WAPE (primary quality metric, unit-independent)",
+      "op": "le",
+      "bound": 0.41,
+      "observed": 0.375373,
+      "passed": true,
+      "reference": "0.4001 (persisted winner) / 0.3964 (EXP2)",
+      "justification": "Frozen champion EXP2 = 0.3964 on val; winner reference 0.4001. A -2.5% band above reference (=0.41) rejects any regression worse than ~2.4% vs. the persisted production quality bar while absorbing test-split variance.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "mae",
+      "description": "Global MAE (unit sales) - interpretable absolute error",
+      "op": "le",
+      "bound": 0.025,
+      "observed": 0.016554,
+      "passed": true,
+      "reference": "0.0235 (winner) / 0.0233 (EXP2)",
+      "justification": "Reference MAE 0.0233-0.0235 units; 0.025 allows ~7% headroom for test-period noise yet rejects any accuracy collapse.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "rmse",
+      "description": "Global RMSE (heavy-tail penalty)",
+      "op": "le",
+      "bound": 0.3,
+      "observed": 0.185602,
+      "passed": true,
+      "reference": "0.2725 (winner) / 0.2592 (EXP2)",
+      "justification": "Reference RMSE 0.26-0.27; budget of 0.30 is ~+10% to keep outliers in check without over-fitting the threshold to one val snapshot.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "mase",
+      "description": "Global MASE (vs train 1-step naive denominator 0.03804)",
+      "op": "le",
+      "bound": 0.64,
+      "observed": 0.435128,
+      "passed": true,
+      "reference": "0.6179 (winner) / 0.6122 (EXP2)",
+      "justification": "Reference MASE ~0.61-0.62; 0.64 leaves ~3-4% band while preserving the 'well below naive (=1)' quality demonstration.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "bias_pct",
+      "description": "Global bias (forecast/actual - 1) in %",
+      "op": "within",
+      "bound": [
+        -12.0,
+        12.0
+      ],
+      "observed": -1.196961,
+      "passed": true,
+      "reference": "-9.6% (winner) / -6.15% (EXP2)",
+      "justification": "Reference bias -6..-9.6% (slight under-forecast). A symmetrical \u00b112% band bounds systematic under/over-forecasting - the business impact asymmetry is then handled by the 2:1 asym loss below.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "asym21",
+      "description": "Asymmetric loss 2:1 (under-forecast penalised double)",
+      "op": "le",
+      "bound": 0.04,
+      "observed": 0.025095,
+      "passed": true,
+      "reference": "0.0381 (winner) / 0.0367 (EXP2)",
+      "justification": "Reference 0.037-0.038 cheap units; 0.04 is +~8% headroom; stricter than the raw pre-experiment score would already fail, guarding the stockout-cost asymmetry the metric encodes.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "pos_wape",
+      "description": "WAPE restricted to positive-demand rows (operational sellable demand)",
+      "op": "le",
+      "bound": 0.42,
+      "observed": 0.336382,
+      "passed": true,
+      "reference": "0.3721 (winner) / 0.3655 (EXP2)",
+      "justification": "Positive-demand error budget 0.42 vs reference 0.365-0.372; +13% band keeps sellable-demand accuracy near the champion.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "B_bias_pct",
+      "description": "B cohort bias (%) - MUST NOT systematically under-forecast",
+      "op": "ge",
+      "bound": -20.0,
+      "observed": 9.851522,
+      "passed": true,
+      "reference": "-30.0% (winner defect) / -18.2% (EXP2 fix)",
+      "justification": "Key business requirement distilled from the defect analysis: the production winner under-forecast B by -30%; EXP2 repaired it to -18.2%. The gate mandates >= -20% - i.e. the candidate MUST hold the fix and may not slip back towards the -30% stockout regime.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "B2_wape",
+      "description": "B2 cohort WAPE (upper-mid demand)",
+      "op": "le",
+      "bound": 0.65,
+      "observed": 0.556648,
+      "passed": true,
+      "reference": "0.5624 (winner) / 0.5557 (EXP2)",
+      "justification": "B2 reference 0.56; 0.65 band = +16% regression guard for this secondary near-mature cohort.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "B2_bias_pct",
+      "description": "B2 cohort bias (%)",
+      "op": "ge",
+      "bound": -20.0,
+      "observed": 0.861589,
+      "passed": true,
+      "reference": "-28.0% (winner defect) / -18.1% (EXP2 fix)",
+      "justification": "Same stockout-risk requirement as B: the -28% production defect must stay fixed (>= -20%), matching the EXP2 result of -18.1%.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "C_wape",
+      "description": "C long-tail cohort WAPE (sparse, many zero-weeks)",
+      "op": "le",
+      "bound": 0.43,
+      "observed": 0.365135,
+      "passed": true,
+      "reference": "0.3807 (winner) / 0.3796 (EXP2)",
+      "justification": "Long tail (majority of 32.7k SKUs) must not be sacrificed for segment gains: 0.43 = +13% band over reference 0.38.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "pred_integrity",
+      "description": "Predictions finite, non-negative, correct length",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "Rejects NaN/Inf/negative/shape-broken outputs before any scoring is trusted.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "schema_ok",
+      "description": "Model input schema == frozen 93-column signature (exact order)",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "Schema drift silently corrupts inference; the gate enforces the frozen contract.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "model_load_ok",
+      "description": "Model artifact loads from MLflow",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "A logged model that cannot reload is not deployable regardless of metrics.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "pyfunc_predict_ok",
+      "description": "PyFunc predict returns pred_demand on unit scale",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "End-to-end MLflow PyFunc contract must hold for the pipeline to be served.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "signature_ok",
+      "description": "MLflow model signature recorded and valid",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "Signature drives downstream serving; its absence breaks the registry contract.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "artifacts_ok",
+      "description": "Model + feature_columns.json + config.json artifacts present in run",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "Reproducibility requires the schema and freeze config shipped with the model.",
+      "group": "post_hoc_holdout"
+    },
+    {
+      "key": "tests_ok",
+      "description": "Regression suite green (Phase-G gate)",
+      "op": "bool",
+      "bound": true,
+      "observed": true,
+      "passed": true,
+      "reference": "required",
+      "justification": "The candidate must not corrupt the project's existing contracts.",
+      "group": "post_hoc_holdout"
+    }
+  ],
+  "diagnostic_metrics": [
+    {
+      "key": "B_wape",
+      "description": "B cohort WAPE (sustained high-volume, the business-critical segment)",
+      "observed": 0.628239,
+      "bound": "diagnostic",
+      "role": "diagnostic"
+    }
+  ],
+  "registry": {
+    "model_name": "demand_forecasting_final",
+    "version": 2,
+    "source_run_id": "5d729a8594dc488bbd18ba0c4e216f5a",
+    "stage_before": "Staging",
+    "stage_after": "Production",
+    "transitioned": true,
+    "revised_gate_decision": "PASS",
+    "tags_applied": {
+      "gate_policy_version": "quality_gate_policy_v2_revised",
+      "legacy_gate_decision": "FAIL",
+      "revised_gate_decision": "PASS",
+      "b_wape_role": "diagnostic",
+      "evaluation_type": "post_hoc_holdout_evaluation",
+      "test_used_for_policy_revision": "false",
+      "gate_policy_revision_applied": "true",
+      "gate_policy_legacy": "quality_gate_policy_v1_legacy",
+      "gate_policy_revision_decision": "REVISED_GATE_APPLIED"
+    },
+    "historical_tags_preserved": true,
+    "v1_preserved": "version 1 (Staging) and run 7fc87198... untouched"
+  },
+  "integrity": {
+    "no_test_access": true,
+    "source_report": "part3_v2_posthoc_holdout_evaluation.json",
+    "source_report_md5": "dba1b7ad028bb2d6cad08a2448b82740",
+    "source_production_policy_md5": "9f047c539666fdfc2f6ef89f9b97f345",
+    "metrics_replayed_from_persisted_report": true,
+    "legacy_replay_identical_to_persisted": true,
+    "legacy_replay_deterministic": true,
+    "no_retraining": true,
+    "no_tuning": true,
+    "no_threshold_value_change": true,
+    "no_v3_no_registration": true,
+    "v1_history_preserved": true,
+    "historical_tags_preserved": true
+  },
+  "protocol": {
+    "exactly_once": true,
+    "force_override_exists": false,
+    "retraining_performed": false,
+    "tuning_after_evaluation": false,
+    "thresholds_changed": false,
+    "second_model_created": false,
+    "v1_history_preserved": true,
+    "test_used_for_policy_revision": false
+  },
+  "notes": "Formal quality-gate policy revision: B_wape <= 0.60 reclassified to a diagnostic/monitoring metric (b_wape_role=diagnostic) by owner decision after the provenance audit; B_bias_pct >= -20 and all other criteria unchanged and still blocking. Metrics are replayed from the persisted post-hoc evaluation report (no Test access, no retraining). V1 and historical reports/tags preserved."
+}

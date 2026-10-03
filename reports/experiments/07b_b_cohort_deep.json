@@ -1,0 +1,60 @@
+{
+  "B_logspace_mean_signed_error": -0.0089,
+  "B_logspace_share_rows_under": 0.4623,
+  "B_unit_share_rows_under": 0.4623,
+  "B_actual_mean": 4.709,
+  "B_pos_actual_mean": 4.709,
+  "B_pred_mean": 2.517,
+  "B_pos_pred_mean": 3.825,
+  "B_expm1_mean_log_pred": 3.298,
+  "B_mean_unit_pred": 3.825,
+  "B_zero_rows": 204,
+  "B_zero_rows_pred_mean": 0.0488,
+  "B_zero_rows_pred_gt0": 203,
+  "B_positive_rows_pred_mean": 3.825,
+  "B_zero_rows_lastweek": 0,
+  "B_rows_lastweek": 0,
+  "B_products_total": 37,
+  "B_products_under": 20,
+  "B_products_over": 17,
+  "B_gap_top5_share": 0.6176,
+  "B_gap_share_from_under": 0.8956,
+  "B_products_gap_gt1sd": 6,
+  "B_top5_detail": {
+    "aca2eb7d00ea1a7b8ebd4e68314663af": {
+      "actual": 259.0,
+      "pred": 175.9,
+      "gap": 83.1
+    },
+    "422879e10f46682990de24d770e7f83d": {
+      "actual": 164.0,
+      "pred": 107.5,
+      "gap": 56.5
+    },
+    "d1c427060a0f73f6b889a5c7c61f2ac4": {
+      "actual": 161.0,
+      "pred": 133.6,
+      "gap": 27.4
+    },
+    "368c6c730842d78016ad823897a372db": {
+      "actual": 129.0,
+      "pred": 103.6,
+      "gap": 25.4
+    },
+    "5a848e4ab52fd5445cdc07aab1c40e48": {
+      "actual": 116.0,
+      "pred": 50.4,
+      "gap": 65.6
+    }
+  },
+  "B_weekly_bias_std": NaN,
+  "B_weekly_bias_range": [
+    -47.97,
+    Infinity
+  ],
+  "B_share_of_total_demand_units": 0.0593,
+  "B2_products_total": 84,
+  "B2_weekly_bias_std": 32.94,
+  "B2_weekly_bias_mean": -8.99,
+  "B2_zero_rows": 874
+}

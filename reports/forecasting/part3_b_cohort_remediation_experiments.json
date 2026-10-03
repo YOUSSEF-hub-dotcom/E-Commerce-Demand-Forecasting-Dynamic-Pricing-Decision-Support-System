@@ -1,0 +1,305 @@
+{
+  "experiment": {
+    "name": "part3_b_cohort_remediation_exp",
+    "generated_utc": "2026-09-23T20:34:46.612239+00:00",
+    "module": "src.models.b_cohort_remediation",
+    "task": "part3_b_cohort_remediation_experiments",
+    "pipeline": "log-LGBM frozen architecture (WINNER_PARAMS, n_estimators=600, seed=1)",
+    "target_transform": "log1p",
+    "prediction_transform": "expm1+floor0"
+  },
+  "pre_registered_criteria": {
+    "B_wape_rel_to_control": 0.95,
+    "B_bias_abs_reduction": 0.75,
+    "global_wape_abs_tol": 0.01,
+    "B2_wape_abs_tol": 0.03,
+    "C_wape_abs_tol": 0.01,
+    "MAE_rel_tol": 1.05,
+    "GROSS_rel_tol": 1.1
+  },
+  "v2_references": {
+    "global_wape": 0.3964,
+    "B_wape": 0.5101460932701322,
+    "B_bias_pct": -18.227
+  },
+  "baseline_v2_history": {
+    "final_posthoc_test_wape": 0.375373,
+    "final_posthoc_test_B_wape": 0.628239,
+    "final_posthoc_test_B2_wape": 0.556648,
+    "final_posthoc_test_C_wape": 0.365135,
+    "final_gate": "FAIL only B_wape > 0.60",
+    "v2_stage": "Staging",
+    "note": "frozen historical result; never used for experiment selection."
+  },
+  "reproducibility": {
+    "control": {
+      "global_wape_recomputed": 0.39637084064700817,
+      "B_wape_recomputed": 0.5101460932701322,
+      "reproduces_global": true,
+      "reproduces_B": true
+    },
+    "control_ok": true,
+    "mase_denominator": 0.03804341247443925
+  },
+  "data_contract": {
+    "train_rows": 2428492,
+    "val_rows": 520391,
+    "val_weeks": 17,
+    "cohorts_from_train": true,
+    "B_rows_val": 589,
+    "B_products_val": 37
+  },
+  "weights_arm2": {
+    "stats": {
+      "formula": "min(max(1, d/p50+), p99+/p50+)",
+      "p50_positive_train": 1.0,
+      "p99_positive_train": 6.0,
+      "cap": 6.0,
+      "n_rows": 2428492,
+      "n_zero_demand_rows": 2386799,
+      "weight_min": 1.0,
+      "weight_p50": 1.0,
+      "weight_p95": 1.0,
+      "weight_max": 6.0,
+      "weight_mean": 1.0061692605946406,
+      "source": "train-labels + train statistics only"
+    }
+  },
+  "spike_features": {
+    "columns": [
+      "peak_8w",
+      "lag1_ratio_to_8w_peak",
+      "weeks_since_peak_8w",
+      "burst_count_16w"
+    ],
+    "construction": {
+      "peak_8w": "max demand over previous 8 weeks",
+      "lag1_ratio_to_8w_peak": "demand_lag_1/(peak_8w+1)",
+      "weeks_since_peak_8w": "weeks back to latest 8w peak (8 sentinel)",
+      "burst_count_16w": "count weeks (16w) with demand>2*rolling_mean_4w"
+    },
+    "causality": "every feature references only earlier rows in the combined (train+val) per-product timeline (shifted before windows); no future information. Seam note: Train/Validation share one boundary week (2018-01-29/2018-02-04) whose Validation rows may see the identical-week Train copy as preceding row (contemporaneous duplicate, never future)"
+  },
+  "arms": {
+    "v2_control": {
+      "arm": "v2_control",
+      "metrics": {
+        "wape": 0.39637084064700817,
+        "mae": 0.023290617180743357,
+        "rmse": 0.2591697329248419,
+        "mase": 0.6122115674137262,
+        "bias_pct": -6.149205956318937,
+        "asym21": 0.036742552132181236,
+        "pos_wape": 0.3655464623933862,
+        "B_wape": 0.5101460932701322,
+        "B_bias_pct": -18.227379605234816,
+        "B_units": 330.4623922429073,
+        "B2_wape": 0.5556867114157257,
+        "B2_bias_pct": -18.11914315620422,
+        "C_wape": 0.37953650890467694,
+        "C_bias_pct": -4.648992996930124
+      },
+      "integrity": {
+        "pred_integrity": true,
+        "n_neg": 0,
+        "n_nan_inf": 0
+      },
+      "feature_count": 93,
+      "feature_diff_vs_v2": [],
+      "weights": "1+log1p (unchanged matrix weight)",
+      "train_rows": 2428492,
+      "val_rows": 520391,
+      "error_analysis": {
+        "spike_weeks": {
+          "rows": 14874,
+          "sum_actual": 20288.0,
+          "sum_abs_error": 6654.728020489207,
+          "underprediction_rate": 0.26959795616512033,
+          "error_share_of_arm": 0.5490596595347155,
+          "wape": 0.32801301362821406,
+          "bias_pct": -15.078485776217487
+        },
+        "high_cv_products": {
+          "rows": 303677,
+          "sum_actual": 16567.0,
+          "sum_abs_error": 7265.7247906152,
+          "underprediction_rate": 0.009440952064199792,
+          "error_share_of_arm": 0.599470987773721,
+          "wape": 0.43856611279140456,
+          "bias_pct": -5.337499634084479
+        },
+        "zero_rows": {
+          "rows": 499990,
+          "sum_actual": 0.0,
+          "sum_abs_error": 942.5478382392536,
+          "underprediction_rate": 0.0,
+          "error_share_of_arm": 0.07776651330684778
+        },
+        "rows_total": 520391,
+        "sum_actual": 30578.0,
+        "sum_abs_error": 12120.227565304216
+      }
+    },
+    "wape_weights": {
+      "arm": "wape_weights",
+      "metrics": {
+        "wape": 0.4580369373985778,
+        "mae": 0.026914096269485276,
+        "rmse": 0.25796818632184515,
+        "mase": 0.7074574681639935,
+        "bias_pct": 7.66335568401475,
+        "asym21": 0.03811966340142614,
+        "pos_wape": 0.43168400682943237,
+        "B_wape": 0.5307686462328672,
+        "B_bias_pct": -6.937520673890452,
+        "B_units": 125.7772498176339,
+        "B2_wape": 0.572629796446285,
+        "B2_bias_pct": -4.103392401518901,
+        "C_wape": 0.4465354800956813,
+        "C_bias_pct": 9.320004719062913
+      },
+      "integrity": {
+        "pred_integrity": true,
+        "n_neg": 0,
+        "n_nan_inf": 0
+      },
+      "feature_count": 93,
+      "feature_diff_vs_v2": [],
+      "weights": "{\"formula\": \"min(max(1, d/p50+), p99+/p50+)\", \"p50_positive_train\": 1.0, \"p99_positive_train\": 6.0, \"cap\": 6.0, \"n_rows\": 2428492, \"n_zero_demand_rows\": 2386799, \"weight_min\": 1.0, \"weight_p50\": 1.0, \"weight_p95\": 1.0, \"weight_max\": 6.0, \"weight_mean\": 1.0061692605946406, \"source\": \"train-labels + train statistics only\"}",
+      "train_rows": 2428492,
+      "val_rows": 520391,
+      "error_analysis": {
+        "spike_weeks": {
+          "rows": 14874,
+          "sum_actual": 20288.0,
+          "sum_abs_error": 7766.608017150218,
+          "underprediction_rate": 0.23302406884496438,
+          "error_share_of_arm": 0.5545258654035203,
+          "wape": 0.38281782418918664,
+          "bias_pct": -3.4151627701542244
+        },
+        "high_cv_products": {
+          "rows": 303677,
+          "sum_actual": 16567.0,
+          "sum_abs_error": 8244.039692105165,
+          "underprediction_rate": 0.007945942563974222,
+          "error_share_of_arm": 0.5886138755285102,
+          "wape": 0.49761813799149907,
+          "bias_pct": 9.454184749347112
+        },
+        "zero_rows": {
+          "rows": 499990,
+          "sum_actual": 0.0,
+          "sum_abs_error": 805.8199109433283,
+          "underprediction_rate": 0.0,
+          "error_share_of_arm": 0.05753450959395755
+        },
+        "rows_total": 520391,
+        "sum_actual": 30578.0,
+        "sum_abs_error": 14005.853471773713
+      }
+    },
+    "spike_features": {
+      "arm": "spike_features",
+      "metrics": {
+        "wape": 0.39600571582547517,
+        "mae": 0.023269162569128556,
+        "rmse": 0.25821117599813925,
+        "mase": 0.6116476166475004,
+        "bias_pct": -5.882556227821789,
+        "asym21": 0.03663202897328882,
+        "pos_wape": 0.3657765581059604,
+        "B_wape": 0.4327103178423898,
+        "B_bias_pct": -0.9380135370699483,
+        "B_units": 0.2907841964916855,
+        "B2_wape": 0.584105563211628,
+        "B2_bias_pct": -42.74307723507016,
+        "C_wape": 0.39528853522702584,
+        "C_bias_pct": -5.7543774819735045
+      },
+      "integrity": {
+        "pred_integrity": true,
+        "n_neg": 0,
+        "n_nan_inf": 0
+      },
+      "feature_count": 97,
+      "feature_diff_vs_v2": [
+        "peak_8w",
+        "lag1_ratio_to_8w_peak",
+        "weeks_since_peak_8w",
+        "burst_count_16w"
+      ],
+      "weights": "1+log1p (unchanged matrix weight)",
+      "train_rows": 2428492,
+      "val_rows": 520391,
+      "error_analysis": {
+        "spike_weeks": {
+          "rows": 14874,
+          "sum_actual": 20288.0,
+          "sum_abs_error": 6653.399899832291,
+          "underprediction_rate": 0.2644883689659809,
+          "error_share_of_arm": 0.54945622312235,
+          "wape": 0.32794755026775885,
+          "bias_pct": -14.799005751736614
+        },
+        "high_cv_products": {
+          "rows": 303677,
+          "sum_actual": 16567.0,
+          "sum_abs_error": 7262.501935473645,
+          "underprediction_rate": 0.009305940193034046,
+          "error_share_of_arm": 0.599757559136749,
+          "wape": 0.4383715781658505,
+          "bias_pct": -5.1758168137332
+        },
+        "zero_rows": {
+          "rows": 499990,
+          "sum_actual": 0.0,
+          "sum_abs_error": 924.3471847473236,
+          "underprediction_rate": 0.0,
+          "error_share_of_arm": 0.07633515505325984
+        },
+        "rows_total": 520391,
+        "sum_actual": 30578.0,
+        "sum_abs_error": 12109.06277851138
+      }
+    }
+  },
+  "decision": {
+    "decision": "NO_VALID_IMPROVEMENT",
+    "selected_arm": null,
+    "rationale": "No non-control arm satisfies every pre-registered criterion on Validation.",
+    "checks": {
+      "wape_weights": {
+        "B_wape_improved>=5%": false,
+        "B_bias_reduced>=25%_and_not_worse": true,
+        "global_wape<=+0.01": false,
+        "B2_wape<=+0.03": true,
+        "C_wape<=+0.01": false,
+        "MAE<=x1.05": false,
+        "gross_guards<=x1.10": false
+      },
+      "spike_features": {
+        "B_wape_improved>=5%": true,
+        "B_bias_reduced>=25%_and_not_worse": true,
+        "global_wape<=+0.01": true,
+        "B2_wape<=+0.03": true,
+        "C_wape<=+0.01": false,
+        "MAE<=x1.05": true,
+        "gross_guards<=x1.10": true
+      }
+    },
+    "qualified": []
+  },
+  "run_ids": {
+    "v2_control": "42e5f1d922e442c2a4a11af4c1522563",
+    "wape_weights": "5b99d15f8b4240b1b46b05fa8dd2fcf1",
+    "spike_features": "c358dcc196e841b4ab86f0d0a62e670f"
+  },
+  "registry_integrity": {
+    "v1_untouched": true,
+    "v2_stage_unchanged_Staging": true,
+    "registered_or_transitioned_in_this_task": false,
+    "mlflow_history_rewritten": false
+  },
+  "test_protection_statement": "The protected Test split was never opened by this experiment; no experiment selection, feature choice, or weighting decision used Test evidence. The historical post-hoc Test result (B WAPE=0.628239, gate FAIL) is preserved unchanged and quoted only as history."
+}

@@ -1,0 +1,47 @@
+{
+  "phase": "part4_dynamic_pricing",
+  "subphase": "4.0_data_feasibility_audit",
+  "date_utc": "2026-09-24",
+  "verdict": "FEASIBLE_WITH_LIMITATIONS",
+  "inputs": {
+    "price": {"available": true, "source": "olist_order_items_dataset.csv.price", "rows": 112650, "min": 0.85, "mean": 120.6537, "p99": 890.0, "max": 6735.0, "weekly_aggregate": "revenue/units per product-week"},
+    "cost": {"available": false, "source": "NO cost/margin/cogs column in order_items/orders/products/order_payments; order_payments only payment_type/installments/value"},
+    "demand": {"available": true, "source": "data/processed/demand_matrix_weekly.csv.gz", "rows": 3469274, "products": 32729, "weeks": 106, "grain": "product-week order_demand (dense incl. zeros)"},
+    "promotions": {"available": false, "note": "no promo/discount/campaign/coupon fields in any table"},
+    "time": {"available": true, "source": "orders.order_purchase_timestamp", "window": "2016-09-04 -> 2018-10-17", "week_labels": "2016-08-29 -> 2018-09-03"}
+  },
+  "weekly_price_variation_check": {
+    "products_in_item_sales": 32951,
+    "product_week_rows_with_sale": 79335,
+    "weeks_with_sales": 95,
+    "per_product_distinct_weekly_prices_median": 1,
+    "per_product_distinct_weekly_prices_mean": 1.299,
+    "products_with_ge2_distinct_weekly_prices": {"n": 5962, "pct": 0.181},
+    "products_with_more_than_5_distinct": {"n": 240, "pct": 0.007},
+    "products_span_ge5pct": {"n": 4922, "pct": 0.149},
+    "products_span_ge20pct": {"n": 2156, "pct": 0.065},
+    "within_product_cv_weekly_price": {"mean": 0.0406, "median": 0.0, "p90": 0.1287},
+    "interpretation": "price mostly flat per product over time; per-product elasticity identifiable only for a minority; category pooling + Unsupported marking required; single-equation log-log is descriptive, not causal (no experimental/instrumental variation exists)"
+  },
+  "demand_granularity_and_separation": {
+    "matrix": "32,729 products x 106 weeks",
+    "avg_price_fill": {"non_null": 78940, "of": 3469274, "note": "price observed only in sale weeks"},
+    "forecast_schema_contains_lagged_price_features": ["price_prev", "price_chg_1w", "freight_prev"],
+    "architecture_separation": "Part-3 Production forecast = demand baseline at current price; elasticity = price demand-response on top; forecasting model unmodified"
+  },
+  "period_boundaries": {
+    "train_period": {"week_start_range": "2016-08-29 -> 2018-01-22", "usage": "elasticity fitting"},
+    "val_period": {"week_start_range": "2018-01-29 -> 2018-05-14", "usage": "elasticity validation/model selection"},
+    "test_period": {"week_start_range": "2018-05-21 -> 2018-09-03", "usage": "NOT used for tuning or repeated inspection"},
+    "test_split_never_read": true
+  },
+  "profit_executability": {
+    "formula": "Profit = (Price - Cost) * Demand",
+    "blocked_by": "Cost absent in all repository data",
+    "engine_without_cost": "simulation grid + demand-response + revenue fully executed; profit columns and profit-optimal price computed as PROFIT_NOT_COMPUTABLE; revenue-optimal scenario + guardrail bounds reported",
+    "engine_with_cost": "optional external cost input (product_id -> cost) activates profit optimizer + margin guardrails for supplied products",
+    "no_business_data_invented": true,
+    "no_guardrail_margin_fabricated": true,
+    "no_test_split_tuning": true
+  }
+}

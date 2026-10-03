@@ -1,0 +1,44 @@
+# Build context is the repository root. Never ship protected analytics data,
+# training splits, raw data, the root MLflow sqlite, history or credentials.
+
+.git
+**/.git*
+
+.env
+**/.env
+mlflow.db
+
+tests
+
+# Reports stay excluded from the image, except the single persisted Part-4
+# pricing artifact the dashboard reads at runtime (dashboard/product_catalog.py).
+# `reports/**` (not bare `reports`) is required: re-including a directory
+# un-excludes its whole subtree, which would ship every other report.
+reports/**
+!reports/forecasting/part4_pricing_engine.json
+
+notebooks
+**/notebooks
+**/*.ipynb
+
+# Documentation is not needed at runtime. `docs/private` holds interview/study
+# material, so keep the whole tree out of the build context.
+docs
+
+data/raw
+data/splits
+
+mlruns/.trash
+mlruns/*/.trash
+
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+.venv
+venv
+
+artifacts/optimization
+artifacts/explainability
+TODO.md
+PROJECT_BLUEPRINT.md
+PROJECT_MAP.md

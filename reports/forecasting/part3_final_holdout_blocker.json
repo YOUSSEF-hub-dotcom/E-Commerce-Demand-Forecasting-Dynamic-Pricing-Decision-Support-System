@@ -1,0 +1,75 @@
+{
+  "status": "BLOCKER",
+  "generated_utc": "2026-09-23T00:42:00",
+  "summary": "No genuinely untouched final holdout exists and none can be created without violating data-integrity rules. Dataset physically ends at the original test boundary.",
+  "audit": {
+    "raw_orders_extent": {
+      "min_order_purchase_timestamp": "2016-09-04T21:15:19",
+      "max_order_purchase_timestamp": "2018-10-17T17:30:18",
+      "orders_after_test_end_2018_09_09": 13,
+      "orders_after_test_end_statuses": "canceled only",
+      "order_items_matching_after_test_end_orders": 0,
+      "last_valid_order_timestamp": "2018-09-03T09:06:57",
+      "last_valid_order_week": "2018-09-03/2018-09-09"
+    },
+    "demand_matrix": {
+      "path": "data/processed/demand_matrix_weekly.csv.gz",
+      "n_weeks": 106,
+      "min_week": "2016-08-29/2016-09-04",
+      "max_week": "2018-09-03/2018-09-09",
+      "n_rows": 3469274,
+      "max_week_matches_last_valid_order_week": true
+    },
+    "splits": {
+      "train": {"weeks": {"min": "2016-08-29/2016-09-04", "max": "2018-01-29/2018-02-04", "distinct_labels": 75}, "rows": 2428492},
+      "val": {"weeks": {"min": "2018-01-29/2018-02-04", "max": "2018-05-21/2018-05-27", "distinct_labels": 17}, "rows": 520391},
+      "test": {"weeks": {"min": "2018-05-21/2018-05-27", "max": "2018-09-03/2018-09-09", "distinct_labels": 16}, "rows": 520391},
+      "test_is_last_16_weeks_of_dataset": true,
+      "boundary_shared_labels_train_val": ["2018-01-29/2018-02-04"],
+      "boundary_shared_labels_val_test": ["2018-05-21/2018-05-27"],
+      "distinct_weeks_across_splits": 106,
+      "matrix_week_union_equals_splits": true,
+      "row_sum_equals_matrix_rows": true
+    },
+    "provenance_hashes": {
+      "data/raw/olist_orders_dataset.csv": "8bd60e55c1ca229d9f70b62f3e72f22c",
+      "data/raw/olist_order_items_dataset.csv": "f4fa76976662e9cba0633f9e49ed2645",
+      "data/raw/olist_products_dataset.csv": "e935401104a3669223b83c9a01fdf5ca",
+      "data/raw/product_category_name_translation.csv": "4196d142e8f2b9697521fc50c97f626b",
+      "data/splits/train.csv": "5631b00d75afdb8fab394e82fff1b8d1",
+      "data/splits/val.csv": "81c3ab0b2755fd3d83b349ac9d8eb57d",
+      "data/splits/test.csv": "d35bfcd546df74b63c9bd25151fde264",
+      "data/processed/demand_matrix_weekly.csv.gz": "d9a9937086d45d72949834aebb13bd9f"
+    },
+    "mlflow_registry_snapshot": [
+      {
+        "version": 1,
+        "stage": "Staging",
+        "run_id": "7fc871986e9240b1a4d98f7a9c1f893f",
+        "gate_decision": "FAIL",
+        "test_scored_once": "true",
+        "wape": "0.3754"
+      },
+      {
+        "version": 2,
+        "stage": "Production",
+        "run_id": "5d729a8594dc488bbd18ba0c4e216f5a",
+        "gate_decision": "PASS",
+        "test_scored_once": "false",
+        "evaluation_group": "v2_validation",
+        "wape": "0.3964",
+        "note": "PROVISIONAL - granted by validation-based gate; NOT final-test validated."
+      }
+    ]
+  },
+  "prohibited_actions_not_taken": [
+    "Rescore or reinterpret the original v1 test split",
+    "Reuse dev/val data to fabricate a 'new untouched' holdout",
+    "Retrain or tune v2 on any final-test signal (none exists)",
+    "Run the final production gate against any metrics",
+    "Change MLflow registry state",
+    "Modify any raw data or split file",
+    "Weaken or invent quality-gate thresholds"
+  ],
+  "required_to_unblock": "Genuinely new future demand-bearing temporal data, unseen by all model development, error analysis, and prior evaluations."
+}

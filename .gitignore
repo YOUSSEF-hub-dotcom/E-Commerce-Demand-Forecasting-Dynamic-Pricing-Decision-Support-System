@@ -1,0 +1,47 @@
+# --- environment / secrets ----------------------------------------------------
+.env
+*.env.local
+*.pem
+
+# --- python -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- runtime artifacts --------------------------------------------------------
+# Inference log written locally by sqlite (compose uses PostgreSQL instead).
+artifacts/inference_log.db
+artifacts/inference_log.db-*
+
+# --- private study / interview material ---------------------------------------
+# docs/private/ holds CV, project-story, interview-prep and study notes. These are
+# personal preparation material, not project documentation, and must not be
+# published. Public technical documentation stays tracked (see docs/ above).
+docs/private/
+
+# --- large / regenerable data and stores --------------------------------------
+# The protected final evaluation split lives in data/splits/test.csv and must
+# never be committed: committing it would leak the Test split into version control.
+# data/raw/ is ~126 MB of unmodified source CSVs; data/processed/ and both
+# mlflow.db copies are reproducible pipeline outputs.
+data/raw/
+data/processed/
+data/splits/
+mlruns/
+mlflow.db
+artifacts/
+!.gitkeep
+
+# --- docker -------------------------------------------------------------------
+deployment/.env
+
+# --- editor -------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+.DS_Store

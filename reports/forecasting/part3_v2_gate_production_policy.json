@@ -1,0 +1,147 @@
+{
+  "deliverable": "Part-3 V2 production policy audit: Quality Gate B_wape <= 0.60 provenance and production decision",
+  "generated_utc": "2026-09-24T00:00:00+00:00",
+  "scope": "audit only",
+  "guards": {
+    "model_artifact_modified": false,
+    "test_split_accessed": false,
+    "mlflow_version_promoted": false,
+    "v3_created": false,
+    "gate_threshold_changed": false,
+    "historical_v1_v2_records_intact": true,
+    "posthoc_classification_preserved": true
+  },
+  "subject": {
+    "registered_model": "demand_forecasting_final",
+    "version": 2,
+    "stage": "Staging",
+    "run_id": "5d729a8594dc488bbd18ba0c4e216f5a",
+    "status": "frozen, not promoted"
+  },
+  "audited_criterion": {
+    "key": "B_wape",
+    "op": "le",
+    "bound": 0.6,
+    "description": "B cohort WAPE (sustained high-volume, the business-critical segment)",
+    "justification_verbatim": "B cohort is the monetarily dominant segment. Reference 0.51-0.55; 0.60 bound rejects >~10% regression on high-volume products.",
+    "reference_verbatim": "0.5485 (winner) / 0.5102 (EXP2)"
+  },
+  "phase1_provenance": {
+    "classification": "empirically derived threshold (engineering heuristic)",
+    "secondary_label": "domain/business guardrail (asserted, unevidenced)",
+    "key_findings": [
+      "Canonical source is src/models/quality_gate.py (Phase-D threshold table), mirrored verbatim in lifecycle and posthoc reports.",
+      "Reference values are validation metrics of pre-V2 candidates: persisted winner (EXP0) val B WAPE 0.5485 and EXP2 (= V2) val B WAPE 0.5102, per reports/experiments/06_forecasting_controlled_experiments_report.md.",
+      "0.60 is a regression guard above the measured reference band 0.51-0.55 (0.60/0.55 = +9.4%, 0.60/0.5102 = +17.6%); stated '>~10% regression' reads off the reference high-end.",
+      "The module itself labels ONLY the cohort-bias bounds (B_bias_pct >= -20, B2_bias_pct >= -20) as 'business requirement'; all WAPE bounds are framed as reference-anchored tolerance bands.",
+      "The 'monetarily dominant segment' premise appears ONLY in the gate justification text and verbatim copies; no revenue/price-weighted analysis exists in the repository (in units, B is ~6% of validation sum-actual; C is ~89%).",
+      "Threshold was pre-registered relative to the Test split (Phase-D table from validation references, shipped before any Test evaluation; lifecycle and posthoc reports state thresholds UNCHANGED).",
+      "No explicit stakeholder/business requirement artifact exists in the repository (no business requirements doc; only MLflow pip requirements.txt files)."
+    ],
+    "pre_registration_status": "pre-registered relative to Test; not reverse-engineered to the post-hoc result"
+  },
+  "phase2_b_cohort": {
+    "definition": "B-sustained = train pos weeks >= 6 and avg weekly demand >= 1.0; B2-mid = pos >= 6 and avg >= 0.5 (not B); C-long-tail = rest",
+    "definition_source": "src/models/final_forecast.py::cohort_flags (train-only cohort assignment)",
+    "constants": {
+      "B_MIN_POS_WEEKS": 6,
+      "B_MIN_AVG_WEEKLY": 1.0,
+      "B2_MIN_AVG_WEEKLY": 0.5
+    },
+    "validation_profile": {
+      "products": 37,
+      "products_share": 0.0011,
+      "val_rows": 589,
+      "rows_share": 0.0011,
+      "sum_actual_units": 1813,
+      "sum_actual_share": 0.06,
+      "zero_demand_rows": 0.346,
+      "mean_actual": 3.08,
+      "median_actual": 1.0,
+      "p95_actual": 13,
+      "max_actual": 31,
+      "wape": 0.5101,
+      "bias_pct": -18.227,
+      "spike_weeks_share_of_rows": 0.1,
+      "spike_weeks_share_of_actual": 0.224,
+      "spike_weeks_share_of_error": 0.268,
+      "spike_weeks_wape": 0.612,
+      "spike_weeks_bias_pct": -58.9
+    },
+    "business_significance": {
+      "role": "sustained high-demand 'best seller' stratum; the visibility cohort where the delivery requirement of the experiment cycle is judged",
+      "why_separate_threshold": "cohort-specific gating preserves segment identity and prevents sacrificing the long tail for segment gains (C_wape justification)",
+      "consequence_of_high_wape": "within the 2:1 cost-of-error framework, under-forecast-dominated high WAPE on B = lost sales/stockouts on best sellers (val: 30% B rows carry 68% of B error)",
+      "test_window_nuance": "on the post-hoc Test run B bias is +9.85% (over-forecast) and B2 +0.86%; the documented stockout mechanism does NOT manifest on Test",
+      "business_critical_vs_diagnostic": "narrative labels B as business-critical ('economically important products', 'monetarily dominant'); repository evidence substantiates B as the analytic sustained-demand stratum and a small (37-product) high-visibility unit bundle, but independent economic significance (revenue weighting) is asserted, not computed"
+    }
+  },
+  "phase3_threshold_assessment": {
+    "observations": {
+      "B_wape_validation": 0.510146,
+      "B_wape_validation_gate": "PASS",
+      "B_wape_posthoc_test": 0.628239,
+      "B_wape_posthoc_gate": "FAIL",
+      "global_wape_val_to_test": {"val": 0.396371, "test": 0.375373, "delta": -0.020998, "improved": true},
+      "B2_val_to_test": {"val": 0.555687, "test": 0.556648, "delta": 0.000961, "gate": "PASS (bound 0.65)"},
+      "B_bias_test": 9.85,
+      "B2_bias_test": 0.86,
+      "asym21_test": 0.025095,
+      "cohort_products": 37,
+      "cohort_rows_per_split": 588
+    },
+    "finding_small_cohort_sampling": {
+      "summary": "B is only 37 independent product series; per-split WAPE is sample-sensitive; val 0.510 sits just below 0.60 while Test 0.628 crosses it despite better global Test WAPE and B2 (harder on val, 0.5557) NOT failing on Test.",
+      "source": "part3_b_cohort_error_analysis.md hypothesis H4 ('Contributory to explain the gate outcome, not the error mechanism')",
+      "caveat": "only one Test realization exists, so the crossing cannot be proven to be sampling noise alone; equally consistent with genuine regression on that window."
+    },
+    "conclusion": [
+      "0.60 has no independently justified business interpretation in-repo (engineering regression guard, unevidenced 'monetarily dominant' label).",
+      "The criterion that fails on Test is an engineering tolerance, while the documented business requirement (bias >= -20%) passes.",
+      "No better model exists today: all three validation-only interventions returned NO_VALID_IMPROVEMENT.",
+      "Any new numeric bound chosen from V2's result would violate the no-threshold-tuning rule; thus no number may be proposed as an engineer-side fix.",
+      "Keeping 0.60 is defensible as the conservative status quo; the evidence does not justify an automatic change."
+    ]
+  },
+  "phase4_production_decision": {
+    "decision": "B_FORMAL_GATE_REVISION_REQUIRED",
+    "allowed_decisions": ["A_KEEP_GATE_FAIL", "B_FORMAL_GATE_REVISION_REQUIRED", "C_GATE_REVISION_JUSTIFIED"],
+    "not_A_rationale": "B_wape<=0.60 is demonstrably not a genuine documented business requirement (module attaches that label to bias bounds, not WAPE bounds); 'monetarily dominant' premise unevidenced; single-split gating of a 37-product cohort is statistically fragile as a hard rule.",
+    "not_C_rationale": "repository contains no documented ALTERNATIVE gate formulation already grounded in business requirements; the documented business requirements (bias>= -20%, asym21) are separate existing criteria, not an alternative formulation; crafting one now IS the policy decision that belongs under B.",
+    "operational_effect": "V2 remains Staging; gate unchanged; no promotion; no V3",
+    "required_policy_decision": [
+      "Confirm or reject the premise 'B = monetarily dominant segment' (with revenue evidence or explicit owner sign-off).",
+      "Decide how a 37-product single-split per-cohort WAPE may be gated: (i) keep current regression-guard form, (ii) treat bias/stockout rule as the sole B business requirement with WAPE regression routed to a diagnostic non-blocking track, or (iii) adopt a variance-aware/robust multi-split formulation.",
+      "Any chosen formulation must be pre-registered and applied prospectively to all future candidates; a fresh evaluation of V2 under a new policy is allowed only as a clearly-labeled policy re-read, never as a rewrite of the historical FAIL.",
+      "If (i) is reaffirmed, 0.60 stays enforced, V2 stays Staging, and a future Robust Loss intervention becomes eligible only as a separate validation-only pre-registered experiment (none started now)."
+    ]
+  },
+  "distinctions": {
+    "historical_gate_definition": "Phase-D table: 12 numeric + 7 technical criteria; B_wape <= 0.60 as reference-anchored regression guard (pre-registered before Test).",
+    "validation_gate_result": "PASS on all 19 criteria (B_wape 0.5101 <= 0.60); v2 provisionally to Production.",
+    "posthoc_holdout_result": "FAIL on B_wape 0.6282 > 0.60 (sole failing criterion of 19); v2 Production to Staging; classified post_hoc_holdout_evaluation, exactly once.",
+    "business_requirement": "B/B2 must not systematically under-forecast (bias >= -20%, stockout guard) plus 2:1 asymmetric cost framework; PASS on the post-hoc holdout (B +9.85%, B2 +0.86%, asym21 0.025095).",
+    "technical_heuristic": "All WAPE tolerance bands including B_wape <= 0.60 are reference-anchored engineering regression guards, not owner-specified requirements.",
+    "production_policy": "Production only when all 19 criteria pass on the held-out evaluation; V2 does not currently satisfy the policy.",
+    "final_production_decision": "B_FORMAL_GATE_REVISION_REQUIRED; blocker treated as gate-policy/provenance issue, not demonstrated model-performance failure. V2 stays Staging until an explicit owner decision."
+  },
+  "deliverables": {
+    "provenance_audit": "reports/forecasting/part3_v2_gate_production_policy.md section 1",
+    "b_cohort_significance_audit": "reports/forecasting/part3_v2_gate_production_policy.md section 2",
+    "threshold_justification_report": "reports/forecasting/part3_v2_gate_production_policy.md section 3",
+    "production_decision": "reports/forecasting/part3_v2_gate_production_policy.md section 4",
+    "json_report": "reports/forecasting/part3_v2_gate_production_policy.json",
+    "tests": "none added (no gate-policy change; decision B leaves the gate unchanged)"
+  },
+  "sources_read_only": [
+    "src/models/quality_gate.py",
+    "src/models/final_forecast.py",
+    "reports/forecasting/part3_v2_posthoc_holdout_evaluation.md",
+    "reports/forecasting/part3_v2_lifecycle_report.md",
+    "reports/forecasting/part3_b_cohort_error_analysis.md",
+    "reports/forecasting/part3_final_holdout_blocker.md",
+    "reports/experiments/06_forecasting_controlled_experiments_report.md",
+    "PROJECT_BLUEPRINT.md",
+    "PROJECT_MAP.md"
+  ]
+}

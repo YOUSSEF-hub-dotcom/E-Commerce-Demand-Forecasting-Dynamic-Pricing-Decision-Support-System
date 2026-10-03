@@ -1,0 +1,75 @@
+{
+  "audit": "part3_quality_gate_promotion_automation_audit",
+  "phase": "part3",
+  "date_utc": "2026-09-24",
+  "verdict": "PARTIALLY_AUTOMATED",
+  "a1_gate_execution": {
+    "auto_invoked_after_scoring_within_module": "AUTOMATED",
+    "trigger_of_scoring_modules": "MANUAL",
+    "determinism": "AUTOMATED",
+    "criteria_versioned": "AUTOMATED",
+    "active_policy_recorded": "AUTOMATED",
+    "thresholds_frozen_and_documented": "AUTOMATED",
+    "evidence": [
+      "src/models/finalize_lifecycle.py:337,384",
+      "src/models/finalize_v2.py:211,249",
+      "src/models/posthoc_holdout.py:376",
+      "src/models/gate_policy_revision.py:201-263",
+      "src/models/quality_gate.py (POLICY_LEGACY / POLICY_REVISED / DIAGNOSTIC_METRICS)"
+    ]
+  },
+  "a2_promotion": {
+    "pass_to_production": "AUTOMATED",
+    "fail_to_staging": "AUTOMATED",
+    "blocked_when_blocking_criterion_fails": "AUTOMATED",
+    "run_version_identity_preserved": "AUTOMATED",
+    "historical_runs_never_rewritten": "AUTOMATED",
+    "manual_promotion_without_valid_decision_structurally_blocked": "NOT_PRESENT_PRIOR_TO_THIS_WORK"
+  },
+  "a3_human_intervention": {
+    "automated": [
+      "gate evaluation (deterministic, versioned policies)",
+      "PASS->Production / FAIL->Staging routing + transition + archiving",
+      "run logging, artifact logging, version tag provenance, audit trail",
+      "PyFunc smoke verification before gate finalization",
+      "once-guards (marker + MLflow tag scan) on protected test",
+      "policy replay + byte-identical verification",
+      "route enforcement (lifecycle_router)"
+    ],
+    "manual": [
+      "python -m src.models.{optuna_tuning,finalize_lifecycle,finalize_v2,posthoc_holdout,gate_policy_revision}",
+      "candidate selection via module constants (SOURCE_RUN_ID=5d729a85, MODEL_VERSION=2)",
+      "retraining / re-evaluation trigger on new data",
+      "policy revision call (owner decision)",
+      "no CI/CD, scheduler, DAG, or pre-commit config in repository"
+    ],
+    "partially_automated_closed_by_this_work": [
+      "gate-to-promotion deterministic once a module executes; now additionally gated by lifecycle_router decision-record provenance"
+    ],
+    "ci_cd_orchestration_present": false,
+    "ci_cd_evidence": "no .github/, Makefile, pyproject.toml, setup.cfg, pytest.ini, cron/DAG config, or git repo found"
+  },
+  "a4_test_automation_proof": {
+    "pass_to_production": "tests/test_registry.py::test_register_and_promote_production, test_promote_production_archives_previous",
+    "fail_to_staging": "tests/test_registry.py::test_failed_candidate_stays_in_staging; tests/test_quality_gate.py",
+    "no_promotion_when_blocking_criterion_fails": "tests/test_quality_gate.py; tests/test_posthoc_holdout.py",
+    "policy_version_preserved": "tests/test_quality_gate.py; tests/test_gate_policy_revision.py",
+    "historical_decisions_reproducible": "tests/test_gate_policy_revision.py (byte-identical replay)",
+    "model_version_run_id_preserved": "tests/test_registry.py; tests/test_posthoc_holdout.py (no v3)",
+    "no_manual_threshold_modification": "tests/test_gate_policy_revision.py; tests/test_quality_gate.py",
+    "guarded_promotion_contract": "tests/test_lifecycle_router.py"
+  },
+  "implemented_gap_closure": {
+    "module": "src/models/lifecycle_router.py",
+    "tests": "tests/test_lifecycle_router.py",
+    "what": "guarded promotion contract: requires persisted decision record with policy+passed+run_id, verifies run_id matches version.run_id and active policy recorded, refuses Production without PASS, routes FAIL -> Staging only; --check read-only mode"
+  },
+  "untouched": [
+    "gate thresholds",
+    "active policies",
+    "historical MLflow runs/versions/tags",
+    "protected test artifacts",
+    "production decision"
+  ],
+  "not_claimed": "full end-to-end lifecycle automation (retraining/scheduling/CI) is not demonstrated by the repository and is not claimed"
+}

@@ -1,0 +1,324 @@
+{
+  "audit_name": "part1_3_data_feature_leakage_audit",
+  "audit_date": "2026-09-23",
+  "audit_type": "data_pipeline_feature_engineering_feature_selection_leakage",
+  "audit_only": true,
+  "changing_nothing": true,
+  "original_features": {
+    "datasets_ingested": ["orders", "order_items", "products", "category_translation"],
+    "datasets_not_ingested": ["customers", "geolocation", "order_payments", "order_reviews", "sellers"],
+    "raw_feature_count": 38,
+    "ingested_feature_count": 23,
+    "leakage_prone_raw_columns_excluded": [
+      "shipping_limit_date",
+      "order_approved_at",
+      "order_delivered_carrier_date",
+      "order_delivered_customer_date",
+      "order_estimated_delivery_date"
+    ],
+    "notes": "Only 4 of 9 raw tables are read by src/. Delivery/deadline timestamps extend past the purchase stream but never enter the model."
+  },
+  "engineered_features": {
+    "calendar": ["week_of_year", "month", "quarter", "year"],
+    "lags": {
+      "phase2": ["demand_lag_1", "demand_lag_2", "demand_lag_3", "demand_lag_4"],
+      "phase3": ["demand_lag_1", "demand_lag_2", "demand_lag_4"]
+    },
+    "rolling": {
+      "phase2": ["rolling_demand_mean_4w", "rolling_demand_max_4w"],
+      "phase3": ["rolling_demand_mean_4w", "rolling_demand_std_4w"]
+    },
+    "drivers": ["price_prev", "price_chg_1w", "freight_prev", "category_share_prev"],
+    "dropped_intermediates": ["price_2w_prev", "cat_total"],
+    "excluded_current_week": ["avg_price", "avg_freight"],
+    "regime": [
+      "rolling_demand_mean_8w",
+      "rolling_demand_mean_12w",
+      "rolling_demand_mean_16w",
+      "rolling_demand_std_8w",
+      "regime_ratio_4_12",
+      "regime_ratio_8_16",
+      "positive_rate_8w"
+    ],
+    "target_transform": "log1p",
+    "sample_weight": "1 + log1p(demand)",
+    "leakage_safety": {
+      "mode": "all_features_past_only",
+      "mechanisms": ["shift(k) lags", "shift(1)+rolling past windows", "shifted drivers", "groupby shift", "stateless calendar"]
+    }
+  },
+  "model_features": {
+    "base_count": 13,
+    "one_hot_count": 73,
+    "regime_count": 7,
+    "total_schema_columns": 93,
+    "schema_fingerprint": "phase3-exp2-v1",
+    "one_hot_prefix": "cat_",
+    "one_hot_includes_unknown": true,
+    "excluded_from_model": [
+      "demand_lag_3",
+      "rolling_demand_max_4w",
+      "avg_price",
+      "avg_freight",
+      "product_id",
+      "week",
+      "product_category_name",
+      "order_demand",
+      "demand_log1p"
+    ],
+    "evidence": {
+      "v2_audit_schema_columns": 93,
+      "artifact_feature_columns_json_count": 86,
+      "artifact_is_staged_winner_only": true
+    }
+  },
+  "feature_selection": {
+    "algorithmic_selection_implemented": false,
+    "methods_not_implemented": ["RFE", "SelectKBest", "mutual_info", "permutation_filtering", "shap_selection", "variance_filtering", "correlation_filtering"],
+    "methods_implemented": {
+      "manual_curated_stack": true,
+      "phase3_subset_reduction": true,
+      "exp2_feature_addition_as_experiment": true,
+      "tree_gain_importance_diagnostic_only": true
+    },
+    "selection_criterion": "temporal window validation (WAPE / cohort bias), not algorithmic pruning",
+    "conclusion": "Feature selection as an automated elimination step never executed; stack is fixed curated + experiment-validated."
+  },
+  "categorical_encoding": {
+    "technique": "one_hot_encoding",
+    "method": "pd.get_dummies(prefix='cat', dtype=float32)",
+    "cardinality_including_unknown": 73,
+    "stateless": true,
+    "target_free": true,
+    "native_categorical_feature_used": false,
+    "native_handling_justification": "single code path for LightGBM+XGBoost",
+    "alignment": "global_categories union across imputed splits with reindex/zero-fill",
+    "train_determined_vocabulary_verified": {
+      "levels_in_val_not_in_train": [],
+      "levels_in_test_not_in_train": []
+    },
+    "claim_evaluation": {
+      "claim": "OHE is the safest engineering choice ... because it prevents target leakage",
+      "verdict": "SUPPORTABLE-FOR-THIS-PROJECT-BUT-OVER-STATEMENT-GLOBALLY",
+      "reason": "Safety here comes from stateless encoder + train-anchored vocabulary, not OHE per se; native LightGBM categorical is equally leakage-safe at high cardinality.",
+      "leakage_free": true
+    },
+    "minor_nuance": {
+      "description": "prepare_frozen builds OHE column vocabulary via pd.concat(train∪val∪test) category lists",
+      "impact": "empirically zero (vocabulary equals train vocabulary after imputation), but layout is not strictly train-only",
+      "recommendation": "restrict category-layout source to imputed train only and add assertion set(val∪test) ⊆ set(train) ∪ {unknown}"
+    }
+  },
+  "preprocessing": {
+    "imputation": {
+      "numeric": "SimpleImputer(strategy='median')",
+      "numeric_fit_scope": "train_only_fit_transform_then_all_splits",
+      "categorical": "structural replacement with 'unknown'",
+      "categorical_fit_scope": "train_vocabulary_based",
+      "leakage_safe": true
+    },
+    "temporal_split": {
+      "method": "chronological individual row assignment",
+      "ratios": "70/15/15",
+      "train_weeks": "2016-08-29/09-04 .. 2018-01-29/02-04",
+      "val_weeks": "2018-01-29/02-04 .. 2018-05-21/05-27",
+      "test_weeks": "2018-05-21/05-27 .. 2018-09-03/09-09",
+      "ordering_guard": "assert_chronological_order uses <=",
+      "boundary_week_sharing": {
+        "train_val": "2018-01-29/02-04",
+        "val_test": "2018-05-21/05-27",
+        "note": "shared week labels across splits; disjoint rows; features past-only so no current-row leakage"
+      },
+      "features_computed_before_split": true,
+      "features_all_past_only": true,
+      "leakage_safe": true
+    },
+    "scaling": {
+      "applied": false,
+      "documented_reason": "tree-based models; blueprint allows skipping scaling",
+      "leakage_implication": "none (no fitted scaler)"
+    },
+    "skewness": "log1p target transform only; no feature-level power/Box-Cox transforms (trees monotonic-invariant)",
+    "outliers": "retained as business signals; no winsorization/capping in pipeline; inference-time floor clip only",
+    "leakage_safe": true
+  },
+  "leakage_checks": [
+    {
+      "check_id": "L1",
+      "check": "zero-lookahead behavioral probe",
+      "file": "tests/test_data_processing.py",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L2",
+      "check": "phase3 no-lookahead feature probe",
+      "file": "tests/test_features.py",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L3",
+      "check": "imputation + median fit scope probe",
+      "file": "tests/test_data_processing.py",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L4",
+      "check": "fold-boundary equivalence proof (recompute-per-window == global past-only)",
+      "file": "notebook 03",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L5",
+      "check": "OHE vocabulary provenance (val/test levels subset of train)",
+      "file": "live verification",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L6",
+      "check": "temporal split ordering & disjoint rows",
+      "file": "test + live verification",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L7",
+      "check": "Optuna isolation to train folds",
+      "file": "src/models/optuna_tuning.py",
+      "status": "PASS"
+    },
+    {
+      "check_id": "L8",
+      "check": "test scored once (v1), v2 never re-scored",
+      "file": "src/models/finalize_lifecycle.py, finalize_v2.py",
+      "status": "PASS"
+    }
+  ],
+  "temporal_cv": {
+    "method": "expanding_window_splits",
+    "folds": 5,
+    "window_type": "expanding",
+    "min_train_weeks_documented": 24,
+    "min_train_weeks_module_default": 20,
+    "validation_horizon_weeks": 4,
+    "folds_future_free": true,
+    "optuna": {
+      "sampler": "TPE",
+      "seed": 42,
+      "trials_per_model": 10,
+      "objective": "mean fold WAPE",
+      "train_only": true,
+      "tuning_subset": "120 mature products, 8899 rows (train only)",
+      "leakage_safe": true
+    },
+    "winner_selection": {
+      "baseline_naive_wape": 1.4923,
+      "lgbm_validation_wape": 0.4001,
+      "xgb_validation_wape": 0.4299,
+      "chosen": "LightGBM",
+      "protected_test_unused_during_selection": true
+    },
+    "frozen_refit": {
+      "early_stopping_in_notebook": true,
+      "early_stopping_in_frozen_fit": false,
+      "frozen_uses_full_estimators": 600,
+      "reproduction_validation_wape": 0.3964,
+      "reproduced": true
+    }
+  },
+  "hypothesis_testing": {
+    "formal_tests_implemented": [],
+    "rationale": "blueprint explicitly forbids standard cross-sectional hypothesis tests on temporal demand (autocorrelation + zero-inflation violate iid assumptions)",
+    "diagnostic_techniques_implemented": ["spearman_rank_correlations", "lag_1_autocorrelation"],
+    "acf_pacf_implemented": false,
+    "spec_compliant": true
+  },
+  "part1_status": {
+    "data_types_temporal_parsing": "IMPLEMENTED",
+    "duplicates_natural_key_integrity": "IMPLEMENTED",
+    "feature_format_domain_constraints": "PARTIAL",
+    "leakage_free_missing_values": "IMPLEMENTED",
+    "distribution_diagnostics": "IMPLEMENTED",
+    "time_series_statistical_eda": "PARTIAL",
+    "practical_effect_size_feature_impact": "PARTIAL",
+    "notes": "domain constraint handling is EDA-only (no hard range validation in pipeline); statistical EDA limited to Spearman + lag-1 autocorr; gain importance diagnostic only, no permutation/shap"
+  },
+  "part2_status": {
+    "time_series_splitting": "IMPLEMENTED",
+    "conditional_imputation": "IMPLEMENTED",
+    "feature_engineering": "IMPLEMENTED",
+    "outlier_and_skewness_handling": "PARTIAL",
+    "scaling": "NOT_APPLIED_DOCUMENTED_SKIP_FOR_TREES",
+    "categorical_encoding": "IMPLEMENTED",
+    "notes": "outliers retained per spec; feature-level skew transforms not applied (tree-invariant)"
+  },
+  "part3_status": {
+    "model_selection": "IMPLEMENTED",
+    "baseline": "IMPLEMENTED",
+    "xgboost": "IMPLEMENTED",
+    "lightgbm": "IMPLEMENTED",
+    "temporal_cv": "IMPLEMENTED",
+    "optuna": "IMPLEMENTED",
+    "target_transformation": "IMPLEMENTED",
+    "sample_weighting": "IMPLEMENTED",
+    "early_stopping": "IMPLEMENTED_DOCUMENTED_NUANCE",
+    "mlflow_tracking": "IMPLEMENTED",
+    "model_packaging": "IMPLEMENTED",
+    "model_signature": "IMPLEMENTED",
+    "model_registry": "IMPLEMENTED",
+    "quality_gate": "IMPLEMENTED",
+    "lifecycle_automation": "IMPLEMENTED",
+    "final_holdout": "BLOCKED"
+  },
+  "specification_vs_implementation": [
+    {
+      "id": "M1",
+      "documented": "phase3 feature_columns.json = exact winner schema (86 columns)",
+      "actual": "artifacts/phase3/feature_columns.json = 86 cols (13 base + 73 OHE, no regime); deployed v1/v2 schema = 93 cols with 7 regime features",
+      "severity": "MEDIUM_ARTIFACT_SYNC"
+    },
+    {
+      "id": "M2",
+      "documented": "lag cross-correlations / ACF-PACF deliverables",
+      "actual": "only lag-1 autocorr + Spearman (diagnostic)",
+      "severity": "MINOR"
+    },
+    {
+      "id": "M3",
+      "documented": "log/power transformations for right-skewed features",
+      "actual": "log1p applied to target only; feature-level transforms skipped for trees",
+      "severity": "MINOR"
+    },
+    {
+      "id": "M4",
+      "documented": "OHE stated as universally safest against leakage",
+      "actual": "leakage-safe here for project-specific reasons; claim is over-stated generally",
+      "severity": "MINOR_DOCUMENTATION"
+    },
+    {
+      "id": "M5",
+      "documented": "early stopping as training element",
+      "actual": "notebook uses early stopping (train tail); frozen lifecycle refits full 600 trees (no early stopping), reproduced to same WAPE",
+      "severity": "MINOR"
+    }
+  ],
+  "confirmed_issues": {
+    "leakage_issues": [],
+    "confirmed_mismatches": ["M1", "M2", "M3", "M4", "M5"]
+  },
+  "unresolved_items": [
+    "artifact/feature_columns.json schema drift 86 vs 93 (in-run MLflow artifact is the authoritative 93-col artifact; loose phase3 file is stale)",
+    "OHE layout source reads all splits (empirically zero-leak, recommend structural restriction to train)",
+    "shared boundary week labels train/val and val/test (documented <= guard)",
+    "early-stopping difference notebook vs frozen refit (reproducible, manual double-check advised for Part 5 explainability)",
+    "hyperparameters tuned on 120-product mature subset (8899 rows) rather than full train matrix"
+  ],
+  "overall": {
+    "raw_to_final_model_leakage": "PASS",
+    "feature_selection": "PARTIAL",
+    "encoding": "PASS",
+    "statistical_ops_leakage": "PASS",
+    "temporal_cv_optuna": "PASS",
+    "lifecycle_holdout": "part1-3 OK; FINAL holdout BLOCKED",
+    "production_status": "v1 Staging (FAIL, test scored once); v2 Production PROVISIONAL (validation-gated)",
+    "next_steps": "Part 4 model validation & fairness audit; resolve M1 artifact sync; restrict OHE layout to train; Part 5 explainability against frozen refit"
+  }
+}

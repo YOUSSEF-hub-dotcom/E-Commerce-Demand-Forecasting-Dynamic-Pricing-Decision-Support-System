@@ -1,0 +1,137 @@
+{
+  "n_rows": {
+    "B-sustained": 589,
+    "B2-mid": 1339,
+    "C-long-tail": 518463
+  },
+  "B_weekly_bias": {
+    "2018-01-29": -24.024,
+    "2018-02-05": -30.059,
+    "2018-02-12": -41.113,
+    "2018-02-19": 17.063,
+    "2018-02-26": -35.281,
+    "2018-03-05": -17.585,
+    "2018-03-12": 2.679,
+    "2018-03-19": -8.005,
+    "2018-03-26": 9.139,
+    "2018-04-02": -5.471,
+    "2018-04-09": 58.001,
+    "2018-04-16": -27.311,
+    "2018-04-23": -19.388,
+    "2018-04-30": -47.973,
+    "2018-05-07": -27.067,
+    "2018-05-14": -21.153,
+    "2018-05-21": Infinity
+  },
+  "B_weekly_wape": {
+    "2018-01-29": 0.5177,
+    "2018-02-05": 0.5228,
+    "2018-02-12": 0.5344,
+    "2018-02-19": 0.6669,
+    "2018-02-26": 0.4742,
+    "2018-03-05": 0.416,
+    "2018-03-12": 0.3617,
+    "2018-03-19": 0.43,
+    "2018-03-26": 0.3908,
+    "2018-04-02": 0.4682,
+    "2018-04-09": 0.7737,
+    "2018-04-16": 0.6048,
+    "2018-04-23": 0.411,
+    "2018-04-30": 0.5839,
+    "2018-05-07": 0.5976,
+    "2018-05-14": 0.5164,
+    "2018-05-21": Infinity
+  },
+  "B_weeks_underforecast": 12,
+  "B_weeks_total": 17,
+  "all_weeks_underforecast": 15,
+  "B_val_positive_rate": 0.6537,
+  "B_val_zero_rows": 204,
+  "B_val_rows_Bpos": 385,
+  "B_share_recent_growth_gt1_2": 0.2054,
+  "B_share_recent_decline_lt0_8": 0.4873,
+  "C_share_recent_growth_gt1_2": 0.0987,
+  "B_n_products": 37,
+  "B_top10_actual_share": 0.6867,
+  "B_top50_actual_share": 1.0,
+  "B_top10_bias_pct": [
+    -32.08,
+    -34.47,
+    -17.01,
+    -19.66,
+    -56.57,
+    -15.06,
+    -2.51,
+    -30.96,
+    -25.75,
+    -23.72
+  ],
+  "B_bias_pct_distribution": {
+    "p10": -27.83,
+    "median": -1.62,
+    "p90": 63.35
+  },
+  "B_worst20_wape_stats": {
+    "mean_wape": 0.6734,
+    "actual_share": 0.4666,
+    "typical_pos_weeks": 9.75
+  },
+  "B_top5_categories": {
+    "ferramentas_jardim": {
+      "actual": 571.0,
+      "wape": 0.1486,
+      "bias_pct": -14.86
+    },
+    "moveis_decoracao": {
+      "actual": 311.0,
+      "wape": 0.2944,
+      "bias_pct": -29.44
+    },
+    "relogios_presentes": {
+      "actual": 197.0,
+      "wape": 0.2596,
+      "bias_pct": -25.96
+    },
+    "informatica_acessorios": {
+      "actual": 164.0,
+      "wape": 0.1568,
+      "bias_pct": -15.68
+    },
+    "beleza_saude": {
+      "actual": 139.0,
+      "wape": 0.0318,
+      "bias_pct": -3.18
+    }
+  },
+  "B_hi_price_rows": 195,
+  "B_hi_price_pos_rate": 0.8205,
+  "B_price_chg_positive_share": 0.0424,
+  "B_price_chg_range": [
+    -0.123,
+    0.08
+  ],
+  "B_lag1_median": 1.0,
+  "C_lag1_median": 0.0,
+  "B_lag2_median": 1.0,
+  "C_lag2_median": 0.0,
+  "B_lag4_median": 2.0,
+  "C_lag4_median": 0.0,
+  "B_rm8_median": 1.875,
+  "C_rm8_median": 0.0,
+  "B_rm16_median": 2.5625,
+  "C_rm16_median": 0.0,
+  "B_pos_rate8_median": 0.75,
+  "C_pos_rate8_median": 0.0,
+  "cohort_bias_pct": {
+    "B-sustained": -18.227,
+    "B2-mid": -18.119,
+    "C-long-tail": -4.649
+  },
+  "cohort_actual_share": {
+    "B-sustained": 0.0593,
+    "B2-mid": 0.0516,
+    "C-long-tail": 0.8891
+  },
+  "B_actual_total": 1813.0,
+  "B_units_gap": 330.4623922429073
+}

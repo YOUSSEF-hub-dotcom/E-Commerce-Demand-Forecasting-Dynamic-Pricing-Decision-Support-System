@@ -1,0 +1,373 @@
+{
+  "experiment": {
+    "name": "part3_b_cohort_asymmetric_exp",
+    "task": "part3_asymmetric_training_objective",
+    "generated_utc": "2026-09-23T22:12:48.299092+00:00",
+    "module": "src.models.b_cohort_asymmetric_objective",
+    "classification_enum": [
+      "VALID_IMPROVEMENT",
+      "NO_VALID_IMPROVEMENT",
+      "EXPERIMENT_FAILED"
+    ]
+  },
+  "hypothesis": "Training directly with the 2:1 asymmetric absolute business loss (as a quantile objective at alpha=2/3) shifts predictions toward the upper conditional quantile, reducing the diagnosed underforecasting on high-demand cohorts without materially degrading global/cohort accuracy.",
+  "control_definition": "Exact frozen V2 replica: same Train/Val, same 93-col schema, same log1p target, same WINNER_PARAMS (n_estimators=600, seed=1, no early stopping), same 1+log1p weights, same validation.",
+  "treatment_definition": "Identical pipeline except training objective -> LightGBM built-in quantile (pinball), alpha=2/3; target/prediction transforms and matrix weights unchanged.",
+  "objective_used": {
+    "objective": "quantile",
+    "alpha": 0.6666666666666666,
+    "alpha_rationale": "tau = under/(under+over) = 2/(2+1) = 2/3",
+    "why_represents_2_to_1": "project asymmetric_loss(2,1) is mean(w*|error|) absolute with w=2 under / 1 over; pinball(tau) weights under by tau and over by 1-tau; with tau=2/3: 3*pinball = asymmetric_loss. Exact match (L1 family), validated against installed LightGBM 4.7.0 built-in objective.",
+    "custom_objective_not_used": "Option B skipped: pinball 2nd derivative is a Dirac at 0; the built-in quantile objective handles the Hessian robustly and the absolute-loss family exactly matches the evaluation loss; no experimental reason to implement both.",
+    "quantile_transform_invariance": "expm1 is strictly increasing, so alpha-quantile of log1p(demand) maps to alpha-quantile of demand; prediction contract preserved."
+  },
+  "pre_registered_criteria": {
+    "C1_global_wape_abs_tol": 0.01,
+    "C2_B_wape_rel_to_control": 0.95,
+    "C3_B_bias_abs_reduction": 0.75,
+    "C4_asym21_rel_tol": 1.1,
+    "C5_B2_wape_abs_tol": 0.03,
+    "C6_C_wape_abs_tol": 0.01,
+    "C7_MAE_rel_tol": 1.05,
+    "C7_RMSE_rel_tol": 1.1,
+    "C7_MASE_rel_tol": 1.1,
+    "C7_POS_WAPE_rel_tol": 1.1
+  },
+  "control_reproduction_tolerance": {
+    "global_wape": 0.005,
+    "B_wape": 0.02,
+    "B_bias_pct": 2.0
+  },
+  "v2_references": {
+    "global_wape": 0.39637084,
+    "B_wape": 0.5101460932701322,
+    "B_bias_pct": -18.227
+  },
+  "baseline_v2_history": {
+    "final_posthoc_test_wape": 0.375373,
+    "final_posthoc_test_B_wape": 0.628239,
+    "final_posthoc_test_B2_wape": 0.556648,
+    "final_posthoc_test_C_wape": 0.365135,
+    "final_gate": "FAIL only B_wape > 0.60",
+    "v2_stage": "Staging",
+    "note": "frozen historical result; never used for experiment selection."
+  },
+  "reproducibility": {
+    "control": {
+      "global_wape_recomputed": 0.39637084064700817,
+      "B_wape_recomputed": 0.5101460932701322,
+      "B_bias_recomputed": -18.227379605234816,
+      "reproduces_global": true,
+      "reproduces_B": true,
+      "reproduces_B_bias": true
+    },
+    "control_ok": true,
+    "mase_denominator": 0.03804341247443925
+  },
+  "data_contract": {
+    "train_rows": 2428492,
+    "val_rows": 520391,
+    "val_weeks": 17,
+    "cohorts_from_train": true,
+    "B_rows_val": 589
+  },
+  "arms": {
+    "v2_control": {
+      "arm": "v2_control",
+      "objective": "regression (L2, symmetric) [frozen V2]",
+      "params": {
+        "colsample_bytree": 0.529,
+        "learning_rate": 0.008468,
+        "max_depth": 10,
+        "min_child_samples": 38,
+        "n_estimators": 600,
+        "num_leaves": 223,
+        "reg_alpha": 2.1423,
+        "reg_lambda": 0.1013,
+        "subsample": 0.6624,
+        "random_state": 1,
+        "n_jobs": -1,
+        "verbose": -1
+      },
+      "metrics": {
+        "wape": 0.39637084064700817,
+        "mae": 0.023290617180743357,
+        "rmse": 0.2591697329248419,
+        "mase": 0.6122115674137262,
+        "bias_pct": -6.149205956318937,
+        "asym21": 0.036742552132181236,
+        "pos_wape": 0.3655464623933862,
+        "B_wape": 0.5101460932701322,
+        "B_bias_pct": -18.227379605234816,
+        "B_units": 330.4623922429073,
+        "B2_wape": 0.5556867114157257,
+        "B2_bias_pct": -18.11914315620422,
+        "C_wape": 0.37953650890467694,
+        "C_bias_pct": -4.648992996930124
+      },
+      "integrity": {
+        "pred_integrity": true,
+        "n_neg": 0,
+        "n_nan_inf": 0
+      },
+      "feature_count": 93,
+      "train_rows": 2428492,
+      "val_rows": 520391,
+      "error_profile": {
+        "spike_weeks": {
+          "rows": 14874,
+          "sum_actual": 20288.0,
+          "sum_abs_error": 6654.728020489207,
+          "underprediction_rate": 0.26959795616512033,
+          "error_share_of_arm": 0.5490596595347155,
+          "wape": 0.32801301362821406,
+          "bias_pct": -15.078485776217487
+        },
+        "high_cv_products": {
+          "rows": 303677,
+          "sum_actual": 16567.0,
+          "sum_abs_error": 7265.7247906152,
+          "underprediction_rate": 0.009440952064199792,
+          "error_share_of_arm": 0.599470987773721,
+          "wape": 0.43856611279140456,
+          "bias_pct": -5.337499634084479
+        },
+        "zero_rows": {
+          "rows": 499990,
+          "sum_actual": 0.0,
+          "sum_abs_error": 942.5478382392536,
+          "underprediction_rate": 0.0,
+          "error_share_of_arm": 0.07776651330684778
+        },
+        "general": {
+          "underforecast_rate": 0.010665057620135629,
+          "overforecast_rate": 0.988923713131088,
+          "exact_match_rate": 0.00041122924877640084,
+          "residual_mean": -0.0036132527221324116,
+          "residual_median": 0.001086569569247803,
+          "residual_std": 0.2591445443552688,
+          "residual_p25": 0.001086569569247803,
+          "residual_p75": 0.001088211061450816,
+          "pred_signed_bias_units": -1880.304197323203
+        },
+        "prediction_distribution": {
+          "pred_min": 0.0,
+          "pred_p01": 0.001076519403004119,
+          "pred_p50": 0.001086569569247803,
+          "pred_p95": 0.013816093443915267,
+          "pred_p99": 1.3026884378153925,
+          "pred_max": 13.963190814450824,
+          "pred_mean": 0.055146410684805844,
+          "n_zero_predictions": 214,
+          "n_negative_predictions": 0
+        },
+        "rows_total": 520391,
+        "sum_actual": 30578.0,
+        "sum_abs_error": 12120.227565304216
+      },
+      "asymmetric_loss_2_1_direct": 0.036742552132181236
+    },
+    "asym_quantile": {
+      "arm": "asym_quantile",
+      "objective": "quantile (pinball) alpha=2/3 - exact 2:1 asymmetric-absolute business loss (x3)",
+      "params": {
+        "colsample_bytree": 0.529,
+        "learning_rate": 0.008468,
+        "max_depth": 10,
+        "min_child_samples": 38,
+        "n_estimators": 600,
+        "num_leaves": 223,
+        "reg_alpha": 2.1423,
+        "reg_lambda": 0.1013,
+        "subsample": 0.6624,
+        "random_state": 1,
+        "n_jobs": -1,
+        "verbose": -1,
+        "objective": "quantile",
+        "alpha": 0.6666666666666666
+      },
+      "metrics": {
+        "wape": 0.36651273488269526,
+        "mae": 0.021536164936063567,
+        "rmse": 0.26072307850678594,
+        "mase": 0.5660944572344389,
+        "bias_pct": -9.61752698194126,
+        "asym21": 0.03512986064542543,
+        "pos_wape": 0.3510954634730624,
+        "B_wape": 0.5564230810561723,
+        "B_bias_pct": 1.4998540212288525,
+        "B_units": -27.192353404878986,
+        "B2_wape": 0.5971906924637628,
+        "B2_bias_pct": 0.41950848156784293,
+        "C_wape": 0.34045920655388223,
+        "C_bias_pct": -10.941477904079221
+      },
+      "integrity": {
+        "pred_integrity": true,
+        "n_neg": 0,
+        "n_nan_inf": 0
+      },
+      "feature_count": 93,
+      "train_rows": 2428492,
+      "val_rows": 520391,
+      "error_profile": {
+        "spike_weeks": {
+          "rows": 14874,
+          "sum_actual": 20288.0,
+          "sum_abs_error": 5844.743183163857,
+          "underprediction_rate": 0.3884630899556273,
+          "error_share_of_arm": 0.5215155802854567,
+          "wape": 0.2880886821354425,
+          "bias_pct": -23.99565178613954
+        },
+        "high_cv_products": {
+          "rows": 303677,
+          "sum_actual": 16567.0,
+          "sum_abs_error": 6957.081617453219,
+          "underprediction_rate": 0.011064387490656191,
+          "error_share_of_arm": 0.6207674731151114,
+          "wape": 0.41993611501498274,
+          "bias_pct": -4.666471094841397
+        },
+        "zero_rows": {
+          "rows": 499990,
+          "sum_actual": 0.0,
+          "sum_abs_error": 471.4293251637515,
+          "underprediction_rate": 0.0,
+          "error_share_of_arm": 0.04206476321912031
+        },
+        "general": {
+          "underforecast_rate": 0.013903007546248878,
+          "overforecast_rate": 0.06416905749715118,
+          "exact_match_rate": 0.9219279349566,
+          "residual_mean": -0.005651226482660153,
+          "residual_median": 0.0,
+          "residual_std": 0.260661825561967,
+          "residual_p25": 0.0,
+          "residual_p75": 0.0,
+          "pred_signed_bias_units": -2940.8474005379976
+        },
+        "prediction_distribution": {
+          "pred_min": 0.0,
+          "pred_p01": 0.0,
+          "pred_p50": 0.0,
+          "pred_p95": 0.0016286519422595556,
+          "pred_p99": 1.2779551847762947,
+          "pred_max": 13.045303077926748,
+          "pred_mean": 0.053108436924278093,
+          "n_zero_predictions": 479934,
+          "n_negative_predictions": 0
+        },
+        "rows_total": 520391,
+        "sum_actual": 30578.0,
+        "sum_abs_error": 11207.226407243055
+      },
+      "asymmetric_loss_2_1_direct": 0.03512986064542543
+    }
+  },
+  "metric_deltas": {
+    "wape": {
+      "control": 0.39637084064700817,
+      "treatment": 0.36651273488269526,
+      "delta": -0.029858105764312914
+    },
+    "mae": {
+      "control": 0.023290617180743357,
+      "treatment": 0.021536164936063567,
+      "delta": -0.0017544522446797904
+    },
+    "rmse": {
+      "control": 0.2591697329248419,
+      "treatment": 0.26072307850678594,
+      "delta": 0.0015533455819440323
+    },
+    "mase": {
+      "control": 0.6122115674137262,
+      "treatment": 0.5660944572344389,
+      "delta": -0.046117110179287324
+    },
+    "bias_pct": {
+      "control": -6.149205956318937,
+      "treatment": -9.61752698194126,
+      "delta": -3.4683210256223234
+    },
+    "asym21": {
+      "control": 0.036742552132181236,
+      "treatment": 0.03512986064542543,
+      "delta": -0.0016126914867558087
+    },
+    "pos_wape": {
+      "control": 0.3655464623933862,
+      "treatment": 0.3510954634730624,
+      "delta": -0.014450998920323754
+    },
+    "B_wape": {
+      "control": 0.5101460932701322,
+      "treatment": 0.5564230810561723,
+      "delta": 0.04627698778604017
+    },
+    "B_bias_pct": {
+      "control": -18.227379605234816,
+      "treatment": 1.4998540212288525,
+      "delta": 19.72723362646367
+    },
+    "B2_wape": {
+      "control": 0.5556867114157257,
+      "treatment": 0.5971906924637628,
+      "delta": 0.0415039810480371
+    },
+    "B2_bias_pct": {
+      "control": -18.11914315620422,
+      "treatment": 0.41950848156784293,
+      "delta": 18.538651637772062
+    },
+    "C_wape": {
+      "control": 0.37953650890467694,
+      "treatment": 0.34045920655388223,
+      "delta": -0.03907730235079471
+    },
+    "C_bias_pct": {
+      "control": -4.648992996930124,
+      "treatment": -10.941477904079221,
+      "delta": -6.292484907149097
+    },
+    "asymmetric_loss_2_1_direct": {
+      "control": 0.036742552132181236,
+      "treatment": 0.03512986064542543,
+      "delta": -0.0016126914867558087
+    }
+  },
+  "decision": {
+    "decision": "NO_VALID_IMPROVEMENT",
+    "candidate": null,
+    "rationale": "Treatment improves the targeted underforecasting dimension but violates pre-registered criterion/criteria: C2_B_wape_improved_ge_5pct, C5_B2_within_tolerance.",
+    "checks": {
+      "C1_global_wape_not_materially_worse": true,
+      "C2_B_wape_improved_ge_5pct": false,
+      "C3_B_bias_moves_toward_zero": true,
+      "C4_asym21_not_materially_worse": true,
+      "C5_B2_within_tolerance": false,
+      "C6_C_within_tolerance": true,
+      "C7_MAE_not_degraded": true,
+      "C7_RMSE_not_degraded": true,
+      "C7_MASE_not_degraded": true,
+      "C7_POS_WAPE_not_degraded": true,
+      "C8_prediction_integrity": true
+    },
+    "failed_criteria": [
+      "C2_B_wape_improved_ge_5pct",
+      "C5_B2_within_tolerance"
+    ]
+  },
+  "run_ids": {
+    "v2_control": "22d96bd398fa45d5b7daef6d5ecea218",
+    "asym_quantile": "42ca9af9520d4a4d9ca587788ad7e194"
+  },
+  "registry_integrity": {
+    "v1_untouched": true,
+    "v2_stage_unchanged_Staging": true,
+    "registered_or_transitioned_in_this_task": false,
+    "mlflow_history_rewritten": false
+  },
+  "test_protection_statement": "The protected Test split was never opened by this experiment; no objective choice, hyperparameter, feature, or decision used Test evidence. The historical post-hoc Test result (B WAPE=0.628239, gate FAIL) is preserved unchanged and quoted only as history."
+}

@@ -1,0 +1,14 @@
+# Development / test dependencies (dev layer only).
+# The runtime contract is REQUIRED here too, so a clean developer environment
+# is fully reproducible:  python -m pip install -r requirements-dev.txt
+# This file is NOT used by the Docker image, which consumes requirements.txt alone.
+-r requirements.txt
+
+# Test runner pinned to the version used for all verified suite runs.
+pytest==9.1.1
+
+# Training/experiment libraries exercised by the test suite (module-level lazy
+# imports, e.g. make_model('xgb') in src/models/forecasting.py). Deliberately NOT
+# in requirements.txt, which stays the lean runtime/Docker contract.
+xgboost==3.2.0
+optuna==5.0.0

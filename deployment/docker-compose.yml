@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      # Dev-only bootstrap credentials. In real deployments read these from
+      # environment / secrets; the API only ever logs inference records here.
+      POSTGRES_USER: inference
+      POSTGRES_PASSWORD: inference
+      POSTGRES_DB: inference
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inference -d inference"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      # Model registry + served data are baked into the image.
+      MLFLOW_TRACKING_URI: sqlite:///artifacts/mlflow_tracking.db
+      MLFLOW_MODEL_NAME: demand_forecasting_final
+      MLFLOW_MODEL_VERSION: "2"
+      MLFLOW_MODEL_ALIAS: Production
+      MLFLOW_MLRUNS_DIR: mlruns
+      REFERENCE_WEEK: "2018-05-14"
+      DATABASE_URL: postgresql+psycopg2://inference:inference@db:5432/inference
+      CORS_ALLOWED_ORIGINS: http://localhost:8501,http://localhost:8502
+      LOG_LEVEL: INFO
+      APP_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # /ready is the deployment gate: it is 2xx only after the model,
+      # elasticity and SHAP warm-up complete.
+      test: ["CMD", "python", "deployment/healthcheck.py", "http://localhost:8000/ready"]
+      interval: 15s
+      timeout: 10s
+      start_period: 600s
+      retries: 5
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    command:
+      - streamlit
+      - run
+      - dashboard/app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+    environment:
+      STREAMLIT_API_BASE_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    healthcheck:
+      test: ["CMD", "python", "deployment/healthcheck.py", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+volumes:
+  pgdata:
